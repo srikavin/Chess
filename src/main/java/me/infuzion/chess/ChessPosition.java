@@ -6,10 +6,10 @@ public class ChessPosition {
     private final int y;
 
     public ChessPosition(int x, int y) {
-        if (x > 8 || x < 1) {
+        if (x > 8 || x < 0) {
             throw new RuntimeException("Invalid x value: " + x);
         }
-        if (y > 8 || y < 1) {
+        if (y > 8 || y < 0) {
             throw new RuntimeException("Invalid y value: " + y);
         }
         this.x = x;
@@ -22,5 +22,20 @@ public class ChessPosition {
 
     public int getY() {
         return y;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj instanceof ChessPosition) {
+            if (((ChessPosition) obj).getX() == x) {
+                if (((ChessPosition) obj).getY() == y) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

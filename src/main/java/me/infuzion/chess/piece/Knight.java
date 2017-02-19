@@ -1,21 +1,17 @@
 package me.infuzion.chess.piece;
 
-import javax.swing.text.Position;
-import me.infuzion.chess.ChessBoard;
 import me.infuzion.chess.ChessPiece;
 import me.infuzion.chess.ChessPosition;
+import me.infuzion.chess.piece.movement.MoveTypes;
 
-public class Knight extends ChessPiece{
+public class Knight extends ChessPiece {
 
     public Knight(Color color, ChessPosition position) {
         super(color, position);
+        setMovementTypes(MoveTypes.KNIGHT_MOVEMENT);
     }
 
     public PieceType getType() {
         return PieceType.KNIGHT;
-    }
-
-    public boolean allowed(ChessBoard board, ChessPosition start, ChessPosition end) {
-        return false;
     }
 }

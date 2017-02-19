@@ -18,15 +18,16 @@ class RookTest {
     @Test
     void allowed() {
         Rook rook = new Rook(Color.BLACK, new ChessPosition(5, 4));
-        assertTrue(rook.allowed(ChessBoard.getDefaultBoard(), rook.currentPosition(),
-            new ChessPosition(5, 5)));
-        assertFalse(rook.allowed(ChessBoard.getDefaultBoard(), rook.currentPosition(),
-            new ChessPosition(6, 5)));
-        assertFalse(rook.allowed(ChessBoard.getDefaultBoard(), rook.currentPosition(),
-            new ChessPosition(5, 1)));
+        assertTrue(rook.allowed(ChessBoard.getDefaultBoard(), new ChessPosition(5, 5)));
+        assertTrue(rook.allowed(ChessBoard.getDefaultBoard(), new ChessPosition(6, 4)));
+        assertTrue(rook.allowed(ChessBoard.getDefaultBoard(), new ChessPosition(5, 5)));
+        assertTrue(rook.allowed(ChessBoard.getDefaultBoard(), new ChessPosition(2, 4)));
 
-        assertTrue(rook.allowed(ChessBoard.getDefaultBoard(), rook.currentPosition(),
-            new ChessPosition(8, 4)));
+        assertFalse(rook.allowed(ChessBoard.getDefaultBoard(), new ChessPosition(6, 5)));
+        assertFalse(rook.allowed(ChessBoard.getDefaultBoard(), new ChessPosition(5, 0)));
+        assertFalse(rook.allowed(ChessBoard.getDefaultBoard(), new ChessPosition(4, 5)));
+        assertFalse(rook.allowed(ChessBoard.getDefaultBoard(), new ChessPosition(5, 7)));
+        assertFalse(rook.allowed(ChessBoard.getDefaultBoard(), new ChessPosition(5, 4)));
 
     }
 

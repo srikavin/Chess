@@ -18,9 +18,9 @@ public abstract class ChessPiece {
 
     public abstract PieceType getType();
 
-    public boolean allowed(ChessBoard board, ChessPosition start, ChessPosition end) {
+    public boolean allowed(ChessBoard board, ChessPosition end) {
         for (MoveType e : moveTypes) {
-            if (e.allowed(board, this, start, end)) {
+            if (e.allowed(board, this, position, end)) {
                 return true;
             }
         }

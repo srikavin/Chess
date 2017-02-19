@@ -19,16 +19,20 @@ class PawnTest {
     @Test
     void allowed() {
         Pawn whitePawn = new Pawn(Color.WHITE, new ChessPosition(2, 2));
-        assertTrue(whitePawn.allowed(ChessBoard.getDefaultBoard(), whitePawn.currentPosition(),
+        assertTrue(whitePawn.allowed(ChessBoard.getDefaultBoard(),
             new ChessPosition(2, 3)));
-        assertFalse(whitePawn.allowed(ChessBoard.getDefaultBoard(), whitePawn.currentPosition(),
+        assertFalse(whitePawn.allowed(ChessBoard.getDefaultBoard(),
             new ChessPosition(3, 3)));
-        assertFalse(whitePawn.allowed(ChessBoard.getDefaultBoard(), whitePawn.currentPosition(),
+        assertFalse(whitePawn.allowed(ChessBoard.getDefaultBoard(),
             new ChessPosition(2,  1)));
 
-        Pawn blackPawn = new Pawn(Color.BLACK, new ChessPosition(2, 7));
-        assertFalse(blackPawn.allowed(ChessBoard.getDefaultBoard(), whitePawn.currentPosition(),
-            new ChessPosition(2,  8)));
+        Pawn whitePawn2 = new Pawn(Color.WHITE, new ChessPosition(6, 5));
+        assertTrue(whitePawn2.allowed(ChessBoard.getDefaultBoard(),
+            new ChessPosition(7, 6)));
+
+        Pawn blackPawn = new Pawn(Color.BLACK, new ChessPosition(2, 5));
+        assertFalse(blackPawn.allowed(ChessBoard.getDefaultBoard(),
+            new ChessPosition(2, 7)));
 
     }
 

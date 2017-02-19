@@ -5,12 +5,12 @@ import me.infuzion.chess.ChessPiece;
 import me.infuzion.chess.ChessPosition;
 import me.infuzion.chess.piece.movement.MoveType;
 
-public class HorizontalMovement implements MoveType {
+public class RowMovement implements MoveType {
 
     @Override
     public boolean allowed(ChessBoard board, ChessPiece piece, ChessPosition start,
         ChessPosition end) {
-        if (start == end) {
+        if (start.equals(end)) {
             return false;
         }
         ChessPiece[][] pieces = board.getPieces();

@@ -56,17 +56,9 @@ public class ChessBoard implements Cloneable {
         DEFAULT_BOARD = new ChessBoard(pieces, boardColor, pieceColors);
     }
 
-    public ChessPiece[][] getPieces() {
-        return pieces;
-    }
-
     private final ChessPiece[][] pieces;
-
-    public Color[][] getBoardColors() {
-        return boardColors;
-    }
-
     private final Color[][] boardColors;
+
     public ChessBoard(PieceType[][] pieceTypes, Color[][] boardColor, Color[][] pieceColors) {
         if (pieceTypes.length == 8 && boardColor.length == 8) {
             for (Color[] e : boardColor) {
@@ -87,9 +79,9 @@ public class ChessBoard implements Cloneable {
             }
             for (int j = 0; j < 8; j++) {
                 ChessPiece piece;
-                ChessPosition curPosition = new ChessPosition(i + 1, j + 1);
-                if(curTypes.length < 8){
-                    pieces[i][j] = null;
+                ChessPosition curPosition = new ChessPosition(i, j);
+                if (curTypes.length < 8) {
+                    pieces[j][i] = null;
                     continue;
                 }
                 switch (curTypes[j]) {
@@ -112,19 +104,16 @@ public class ChessBoard implements Cloneable {
                         piece = new Rook(curColors[j], curPosition);
                         break;
                     default:
-                        if(curTypes[j] == null){
+                        if (curTypes[j] == null) {
                             piece = null;
                             break;
                         }
                         throw new RuntimeException(
                             "Unknown input piece type: " + curTypes[i].name());
                 }
-                pieces[i][j] = piece;
-                System.out.print(piece.getType());
+                pieces[j][i] = piece;
             }
-            System.out.println();
         }
-
     }
 
     public static void main(String[] str) {
@@ -139,4 +128,23 @@ public class ChessBoard implements Cloneable {
         }
     }
 
+    public ChessPiece[][] getPieces() {
+        return pieces;
+    }
+
+    public Color[][] getBoardColors() {
+        return boardColors;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        for (ChessPiece[] e : pieces) {
+            for (ChessPiece f : e) {
+                builder.append(f == null ? "null" : f.getType()).append(' ');
+            }
+            builder.append('\n');
+        }
+        return builder.toString();
+    }
 }

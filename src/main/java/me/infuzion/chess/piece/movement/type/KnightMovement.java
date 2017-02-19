@@ -5,7 +5,7 @@ import me.infuzion.chess.ChessPiece;
 import me.infuzion.chess.ChessPosition;
 import me.infuzion.chess.piece.movement.MoveType;
 
-public class HorseMovement implements MoveType {
+public class KnightMovement implements MoveType {
 
     @Override
     public boolean allowed(ChessBoard board, ChessPiece piece, ChessPosition start,
@@ -14,6 +14,7 @@ public class HorseMovement implements MoveType {
         int startY = start.getY();
         int endX = end.getX();
         int endY = end.getY();
+
         int differenceX = Math.abs(startX - endX);
         int differenceY = Math.abs(startY - endY);
         if (differenceX == 1) {
