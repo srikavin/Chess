@@ -18,10 +18,8 @@ class PawnTest {
 
     @Test
     void allowed() {
-        Pawn whitePawn = new Pawn(Color.WHITE, new ChessPosition(2, 2));
+        Pawn whitePawn = new Pawn(Color.WHITE, new ChessPosition(3, 1));
         assertTrue(whitePawn.allowed(ChessBoard.getDefaultBoard(),
-            new ChessPosition(2, 3)));
-        assertFalse(whitePawn.allowed(ChessBoard.getDefaultBoard(),
             new ChessPosition(3, 3)));
         assertFalse(whitePawn.allowed(ChessBoard.getDefaultBoard(),
             new ChessPosition(2,  1)));

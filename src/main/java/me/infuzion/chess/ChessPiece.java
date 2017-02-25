@@ -8,17 +8,31 @@ import me.infuzion.chess.piece.movement.MoveTypes;
 public abstract class ChessPiece {
 
     private final Color color;
-    private final ChessPosition position;
-    private MoveType[] moveTypes;
+    private ChessPosition position;
+    private transient MoveType[] moveTypes;
+    private transient MoveType[] requiredTypes;
+    private PieceType type;
 
     public ChessPiece(Color color, ChessPosition position) {
         this.color = color;
         this.position = position;
+        setRequiredTypes(MoveTypes.NO_FRIENDLY_CAPTURES);
     }
 
-    public abstract PieceType getType();
+    public final PieceType getType() {
+        return type;
+    }
+
+    protected void setType(PieceType type) {
+        this.type = type;
+    }
 
     public boolean allowed(ChessBoard board, ChessPosition end) {
+        for (MoveType e : requiredTypes) {
+            if (!e.allowed(board, this, position, end)) {
+                return false;
+            }
+        }
         for (MoveType e : moveTypes) {
             if (e.allowed(board, this, position, end)) {
                 return true;
@@ -27,10 +41,34 @@ public abstract class ChessPiece {
         return false;
     }
 
-    protected void setMovementTypes(MoveTypes... types){
+    public boolean move(ChessBoard board, ChessPosition end) {
+        if (allowed(board, end)) {
+            board.setPiece(position, null);
+            board.setPiece(end, this);
+            this.position = end;
+            return true;
+        }
+        return false;
+    }
+
+    protected void setRequiredTypes(MoveTypes... types) {
         MoveType[] converted = new MoveType[types.length];
 
-        for(int i = 0; i < types.length; i++){
+        for (int i = 0; i < types.length; i++) {
+            converted[i] = types[i].getType();
+        }
+        setRequiredTypes(converted);
+    }
+
+    protected void setRequiredTypes(MoveType... types) {
+        this.requiredTypes = types;
+    }
+
+
+    protected void setMovementTypes(MoveTypes... types) {
+        MoveType[] converted = new MoveType[types.length];
+
+        for (int i = 0; i < types.length; i++) {
             converted[i] = types[i].getType();
         }
         setMovementTypes(converted);

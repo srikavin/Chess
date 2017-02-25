@@ -9,9 +9,6 @@ public class Knight extends ChessPiece {
     public Knight(Color color, ChessPosition position) {
         super(color, position);
         setMovementTypes(MoveTypes.KNIGHT_MOVEMENT);
-    }
-
-    public PieceType getType() {
-        return PieceType.KNIGHT;
+        setType(PieceType.KNIGHT);
     }
 }

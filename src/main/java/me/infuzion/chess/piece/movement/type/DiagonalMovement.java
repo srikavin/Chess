@@ -32,7 +32,6 @@ public class DiagonalMovement implements MoveType {
 
         int curX = startX;
         int curY = startY;
-        ChessPiece[][] pieces = board.getPieces();
         while (true) {
             // Returns false if out of bounds
             if (curX > 8 || curX < 0 || curY > 8 || curY < 0) {
@@ -44,7 +43,7 @@ public class DiagonalMovement implements MoveType {
             }
             // Checks if the current piece is null. If it isn't return false because a piece is in
             // the way of movement
-            if (pieces[curX][curY] != null) {
+            if (board.getPieces()[curX][curY] != null) {
                 return false;
             }
             curX += xMovement;

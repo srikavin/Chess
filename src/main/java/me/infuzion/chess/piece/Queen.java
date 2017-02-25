@@ -9,9 +9,7 @@ public class Queen extends ChessPiece {
     public Queen(Color color, ChessPosition position) {
         super(color, position);
         setMovementTypes(MoveTypes.DIAGONAL_MOVEMENT, MoveTypes.HORIZONTAL_MOVEMENT);
+        setType(PieceType.QUEEN);
     }
 
-    public PieceType getType() {
-        return PieceType.QUEEN;
-    }
 }

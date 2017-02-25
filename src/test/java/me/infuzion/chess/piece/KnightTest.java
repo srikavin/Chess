@@ -18,7 +18,7 @@ class KnightTest {
 
     @Test
     void allowed() {
-        Knight knight = new Knight(Color.WHITE, new ChessPosition(3, 3));
+        Knight knight = new Knight(Color.BLACK, new ChessPosition(3, 3));
         ChessBoard def = ChessBoard.getDefaultBoard();
 
         assertTrue(knight.allowed(def, new ChessPosition(5, 4)));

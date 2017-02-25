@@ -23,7 +23,7 @@ public class RowMovement implements MoveType {
         }
         if (cX != eX) {
             int offset = getOffset(cX, eX);
-            for (int i = cX; i != eX; i += offset) {
+            for (int i = cX + offset; i != eX; i += offset) {
                 if (pieces[i][cY] != null) {
                     return false;
                 }
@@ -31,7 +31,7 @@ public class RowMovement implements MoveType {
         }
         if (cY != eY) {
             int offset = getOffset(cY, eY);
-            for (int i = cY; i != eY; i += offset) {
+            for (int i = cY + offset; i != eY; i += offset) {
                 if (pieces[cX][i] != null) {
                     return false;
                 }

@@ -20,7 +20,7 @@ import me.infuzion.chess.piece.Rook;
 
 public class ChessBoard implements Cloneable {
 
-    public static final ChessBoard DEFAULT_BOARD;
+    private static final ChessBoard DEFAULT_BOARD;
 
     static {
         final PieceType[][] pieces = {
@@ -129,7 +129,23 @@ public class ChessBoard implements Cloneable {
     }
 
     public ChessPiece[][] getPieces() {
-        return pieces;
+        return pieces.clone();
+    }
+
+    public void setPiece(int x, int y, ChessPiece piece) {
+        pieces[y][x] = piece;
+    }
+
+    public void setPiece(ChessPosition pos, ChessPiece piece) {
+        setPiece(pos.getX(), pos.getY(), piece);
+    }
+
+    public ChessPiece getPiece(ChessPosition pos) {
+        return getPiece(pos.getX(), pos.getY());
+    }
+
+    public ChessPiece getPiece(int x, int y) {
+        return pieces[y][x];
     }
 
     public Color[][] getBoardColors() {

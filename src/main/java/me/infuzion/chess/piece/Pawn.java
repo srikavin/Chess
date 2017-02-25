@@ -9,9 +9,6 @@ public class Pawn extends ChessPiece {
     public Pawn(Color color, ChessPosition position) {
         super(color, position);
         setMovementTypes(MoveTypes.PAWN_MOVEMENT);
-    }
-
-    public PieceType getType() {
-        return PieceType.PAWN;
+        setType(PieceType.PAWN);
     }
 }

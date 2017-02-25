@@ -3,6 +3,7 @@ package me.infuzion.chess.piece.movement;
 import me.infuzion.chess.piece.movement.type.DiagonalMovement;
 import me.infuzion.chess.piece.movement.type.KingMovement;
 import me.infuzion.chess.piece.movement.type.KnightMovement;
+import me.infuzion.chess.piece.movement.type.NoFriendlyFireMovement;
 import me.infuzion.chess.piece.movement.type.PawnMovement;
 import me.infuzion.chess.piece.movement.type.RowMovement;
 
@@ -11,7 +12,8 @@ public enum MoveTypes {
     HORIZONTAL_MOVEMENT(new RowMovement()),
     DIAGONAL_MOVEMENT(new DiagonalMovement()),
     KNIGHT_MOVEMENT(new KnightMovement()),
-    KING_MOVEMENT(new KingMovement());
+    KING_MOVEMENT(new KingMovement()),
+    NO_FRIENDLY_CAPTURES(new NoFriendlyFireMovement());
 
     private final MoveType type;
 

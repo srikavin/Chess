@@ -17,7 +17,7 @@ class RookTest {
 
     @Test
     void allowed() {
-        Rook rook = new Rook(Color.BLACK, new ChessPosition(5, 4));
+        Rook rook = new Rook(Color.WHITE, new ChessPosition(5, 4));
         assertTrue(rook.allowed(ChessBoard.getDefaultBoard(), new ChessPosition(5, 5)));
         assertTrue(rook.allowed(ChessBoard.getDefaultBoard(), new ChessPosition(6, 4)));
         assertTrue(rook.allowed(ChessBoard.getDefaultBoard(), new ChessPosition(5, 5)));

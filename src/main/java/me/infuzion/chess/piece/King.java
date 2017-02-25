@@ -9,9 +9,7 @@ public class King extends ChessPiece {
     public King(Color color, ChessPosition position) {
         super(color, position);
         setMovementTypes(MoveTypes.KING_MOVEMENT);
+        setType(PieceType.KING);
     }
 
-    public PieceType getType() {
-        return PieceType.KING;
-    }
 }

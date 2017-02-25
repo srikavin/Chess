@@ -19,7 +19,7 @@ class BishopTest {
 
     @Test
     void allowed() {
-        Bishop bishop = new Bishop(Color.BLACK, new ChessPosition(3, 3));
+        Bishop bishop = new Bishop(Color.WHITE, new ChessPosition(3, 3));
 
         assertTrue(bishop.allowed(ChessBoard.getDefaultBoard(), new ChessPosition(4, 4)));
         assertTrue(bishop.allowed(ChessBoard.getDefaultBoard(), new ChessPosition(6, 6)));
