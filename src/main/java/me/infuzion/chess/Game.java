@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import me.infuzion.chess.piece.Color;
+import me.infuzion.chess.util.GameIdentifier;
 
 enum GameStatus {
     IN_PROGRESS_WHITE,
@@ -14,30 +15,37 @@ enum GameStatus {
     WAITING,
 }
 
+enum Visibility {
+    PUBLIC,
+    UNLISTED
+}
+
 public class Game {
 
-    private static final Map<Long, Game> idGameMap = new HashMap<>();
-    private static long currentID = 0;
-    private final long gameID;
+    public static final Map<GameIdentifier, Game> idGameMap = new HashMap<>();
+
+    private final GameIdentifier gameID;
     private final UUID whiteSide;
     private final ChessBoard board;
+    private final Visibility visibility;
     private UUID blackSide;
     private GameStatus status;
 
-    public Game(UUID whiteSide) {
+    public Game(UUID whiteSide, Visibility visibility) {
         this.whiteSide = whiteSide;
+        this.visibility = visibility;
         board = ChessBoard.getDefaultBoard();
-        gameID = currentID;
-        currentID++;
+        gameID = new GameIdentifier();
+        System.out.println("created with " + gameID);
         status = GameStatus.WAITING;
         idGameMap.put(gameID, this);
     }
 
-    public static Game fromID(long id) {
+    public static Game fromID(GameIdentifier id) {
         return idGameMap.get(id);
     }
 
-    public long getGameID() {
+    public GameIdentifier getGameID() {
         return gameID;
     }
 
@@ -102,5 +110,9 @@ public class Game {
 
     public GameStatus getStatus() {
         return status;
+    }
+
+    public Visibility getVisibility() {
+        return visibility;
     }
 }

@@ -1,19 +1,20 @@
 const tileHeight = 80;
 const tileWidth = 80;
 
+const imgBaseURL = "/";
 const imgSources = {
-  wRook: "sprite/wRook.svg",
-  wBishop: "sprite/wBishop.svg",
-  wKnight: "sprite/wKnight.svg",
-  wKing: "sprite/wKing.svg",
-  wQueen: "sprite/wQueen.svg",
-  wPawn: "sprite/wPawn.svg",
-  bRook: "sprite/bRook.svg",
-  bBishop: "sprite/bBishop.svg",
-  bKnight: "sprite/bKnight.svg",
-  bKing: "sprite/bKing.svg",
-  bQueen: "sprite/bQueen.svg",
-  bPawn: "sprite/bPawn.svg"
+  wRook: imgBaseURL + "sprite/wRook.svg",
+  wBishop: imgBaseURL + "sprite/wBishop.svg",
+  wKnight: imgBaseURL + "sprite/wKnight.svg",
+  wKing: imgBaseURL + "sprite/wKing.svg",
+  wQueen: imgBaseURL + "sprite/wQueen.svg",
+  wPawn: imgBaseURL + "sprite/wPawn.svg",
+  bRook: imgBaseURL + "sprite/bRook.svg",
+  bBishop: imgBaseURL + "sprite/bBishop.svg",
+  bKnight: imgBaseURL + "sprite/bKnight.svg",
+  bKing: imgBaseURL + "sprite/bKing.svg",
+  bQueen: imgBaseURL + "sprite/bQueen.svg",
+  bPawn: imgBaseURL + "sprite/bPawn.svg"
 };
 
 function Action(startX, startY, endX, endY) {
@@ -31,6 +32,7 @@ String.prototype.capitalizeFirstLetter = function () {
 };
 
 $(function () {
+  window.navigator.vibrate([200, 100, 200]);
   var canvas = document.getElementById('canvas');
   var clickStart;
   var clickEnd;
@@ -56,7 +58,6 @@ $(function () {
         y: Math.floor(y / tileHeight)
       };
     }
-    console.log("x: " + x + " y: " + y);
   });
 
   var ctx;
@@ -69,22 +70,59 @@ $(function () {
     alert("Your browser is not supported.");
   }
 
+  var errorLast = false;
+
   function getAjax() {
-    $.ajax("/chess.json", {
+    var curUrl = window.location.href;
+    var url;
+    if (curUrl.endsWith("/play.html")) {
+      url = "/chess.json";
+    } else {
+      url = curUrl + ".json";
+    }
+    $.ajax(url, {
       dataType: "json",
       success: function (data) {
         if (_.isEqual(lastAjax, data)) {
           return;
         }
+        if (errorLast) {
+          $.notify("A connection has been made.", {
+            animate: {
+              enter: 'animated bounceIn',
+              exit: 'animated bounceOut'
+            },
+            type: 'success',
+            timer: 3500
+          });
+          errorLast = false;
+        }
+        var id = data["gameID"]["id"];
+        history.pushState(undefined, "Chess", "/game/" + id);
         notify();
         lastAjax = data;
         setUpGrid(ctx);
         loadBoard(data);
+      },
+      error: function () {
+        if (errorLast) {
+          return;
+        }
+        $.notify("An error has occurred and connection has been lost.", {
+          animate: {
+            enter: 'animated bounceIn',
+            exit: 'animated bounceOut'
+          },
+          type: 'danger',
+          timer: 3500
+        });
+        errorLast = true;
       }
+
     })
   }
 
-  setInterval(draw, 750);
+  setInterval(draw, 1000);
 
   function loadBoard(jsonObject) {
     var pieces = jsonObject["board"]["pieces"];
@@ -104,7 +142,7 @@ $(function () {
 
   function getImage(type, color) {
     var colorPrefix;
-    if (color == "WHITE") {
+    if (color === "WHITE") {
       colorPrefix = 'w';
     } else {
       colorPrefix = 'b';
@@ -168,24 +206,21 @@ $(function () {
   }
 
   function notify() {
-    // Let's check if the browser supports notifications
-    if (!("Notification" in window)) {
+    $.notify("Your opponent has made a move!", {
+      animate: {
+        enter: 'animated bounceIn',
+        exit: 'animated bounceOut'
+      },
+      type: 'info',
+      timer: 3500
+    });
+    if (!document.hasFocus() || !("Notification" in window)) {
+      return;
     }
-
-    // Let's check whether notification permissions have already been granted
-    else if (Notification.permission === "granted") {
-      // If it's okay let's create a notification
-      var notification = new Notification("Your opponent has made a move!");
-    }
-
-    // Otherwise, we need to ask the user for permission
-    else if (Notification.permission !== 'denied') {
-      Notification.requestPermission(function (permission) {
-        // If the user accepts, let's create a notification
-        if (permission === "granted") {
-          var notification = new Notification("Your opponent has made a move!");
-        }
-      });
-    }
+    Notification.requestPermission().then(function (result) {
+      if (result === "granted") {
+        var notification = new Notification("Your opponent has made a move!");
+      }
+    });
   }
 });
