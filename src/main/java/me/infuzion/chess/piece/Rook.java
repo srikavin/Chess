@@ -10,6 +10,6 @@ public class Rook extends ChessPiece {
         super(color, position);
         setMovementTypes(MoveTypes.HORIZONTAL_MOVEMENT);
         setType(PieceType.ROOK);
-        System.out.println("creating @ x: " + position.getX() + " y: " + position.getY());
+        System.out.println("creating @ x: " + position.getRow() + " y: " + position.getCol());
     }
 }

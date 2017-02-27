@@ -19,10 +19,10 @@ public class PawnMovement implements MoveType {
         boolean isInFront = false;
         Pawn pawn = (Pawn) piece;
 
-        int startRow = start.getX();
-        int startCol = start.getY();
-        int endRow = end.getX();
-        int endCol = end.getY();
+        int startRow = start.getRow();
+        int startCol = start.getCol();
+        int endRow = end.getRow();
+        int endCol = end.getCol();
 
         switch (piece.getColor()) {
             case BLACK:

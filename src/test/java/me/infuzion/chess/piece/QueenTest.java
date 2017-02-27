@@ -26,10 +26,8 @@ class QueenTest {
         assertTrue(queen.allowed(def, new ChessPosition(2, 6)));
 
         assertFalse(queen.allowed(def, new ChessPosition(4, 6)));
-        assertFalse(queen.allowed(def, new ChessPosition(2, 7)));
-        assertFalse(queen.allowed(def, new ChessPosition(2, 7)));
+        assertFalse(queen.allowed(def, new ChessPosition(7, 2)));
         assertFalse(queen.allowed(def, new ChessPosition(2, 2)));
-
 
     }
 

@@ -14,10 +14,10 @@ public class RowMovement implements MoveType {
             return false;
         }
         ChessPiece[][] pieces = board.getPieces();
-        int cRow = start.getX();
-        int cCol = start.getY();
-        int eRow = end.getX();
-        int eCol = end.getY();
+        int cRow = start.getRow();
+        int cCol = start.getCol();
+        int eRow = end.getRow();
+        int eCol = end.getCol();
         if (cRow != eRow && cCol != eCol) {
             return false;
         }

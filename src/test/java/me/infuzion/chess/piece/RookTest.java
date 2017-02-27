@@ -24,9 +24,9 @@ class RookTest {
         assertTrue(rook.allowed(ChessBoard.getDefaultBoard(), new ChessPosition(2, 4)));
 
         assertFalse(rook.allowed(ChessBoard.getDefaultBoard(), new ChessPosition(6, 5)));
-        assertFalse(rook.allowed(ChessBoard.getDefaultBoard(), new ChessPosition(5, 0)));
+        assertFalse(rook.allowed(ChessBoard.getDefaultBoard(), new ChessPosition(0, 5)));
         assertFalse(rook.allowed(ChessBoard.getDefaultBoard(), new ChessPosition(4, 5)));
-        assertFalse(rook.allowed(ChessBoard.getDefaultBoard(), new ChessPosition(5, 7)));
+        assertFalse(rook.allowed(ChessBoard.getDefaultBoard(), new ChessPosition(7, 5)));
         assertFalse(rook.allowed(ChessBoard.getDefaultBoard(), new ChessPosition(5, 4)));
 
     }

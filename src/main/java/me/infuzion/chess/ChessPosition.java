@@ -2,26 +2,26 @@ package me.infuzion.chess;
 
 public class ChessPosition {
 
-    private final int x;
-    private final int y;
+    private final int row;
+    private final int col;
 
-    public ChessPosition(int x, int y) {
-        if (x > 8 || x < 0) {
-            throw new RuntimeException("Invalid x value: " + x);
+    public ChessPosition(int row, int col) {
+        if (row > 8 || row < 0) {
+            throw new RuntimeException("Invalid row value: " + row);
         }
-        if (y > 8 || y < 0) {
-            throw new RuntimeException("Invalid y value: " + y);
+        if (col > 8 || col < 0) {
+            throw new RuntimeException("Invalid col value: " + col);
         }
-        this.x = x;
-        this.y = y;
+        this.row = row;
+        this.col = col;
     }
 
-    public int getX() {
-        return x;
+    public int getRow() {
+        return row;
     }
 
-    public int getY() {
-        return y;
+    public int getCol() {
+        return col;
     }
 
     @Override
@@ -30,8 +30,8 @@ public class ChessPosition {
             return true;
         }
         if (obj instanceof ChessPosition) {
-            if (((ChessPosition) obj).getX() == x) {
-                if (((ChessPosition) obj).getY() == y) {
+            if (((ChessPosition) obj).getRow() == row) {
+                if (((ChessPosition) obj).getCol() == col) {
                     return true;
                 }
             }
@@ -41,6 +41,6 @@ public class ChessPosition {
 
     @Override
     public String toString() {
-        return "[x] = " + x + ", [y] " + y;
+        return "[row] = " + row + ", [col] " + col;
     }
 }

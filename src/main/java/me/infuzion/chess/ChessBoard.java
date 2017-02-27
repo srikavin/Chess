@@ -137,15 +137,15 @@ public class ChessBoard implements Cloneable {
     }
 
     public void setPiece(ChessPosition pos, ChessPiece piece) {
-        setPiece(pos.getX(), pos.getY(), piece);
+        setPiece(pos.getRow(), pos.getCol(), piece);
     }
 
     public ChessPiece getPiece(ChessPosition pos) {
-        return getPiece(pos.getX(), pos.getY());
+        return getPiece(pos.getRow(), pos.getCol());
     }
 
-    public ChessPiece getPiece(int x, int y) {
-        return pieces[y][x];
+    public ChessPiece getPiece(int row, int col) {
+        return pieces[col][row];
     }
 
     public Color[][] getBoardColors() {

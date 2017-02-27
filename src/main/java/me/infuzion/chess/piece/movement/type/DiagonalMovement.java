@@ -13,10 +13,10 @@ public class DiagonalMovement implements MoveType {
     @Override
     public boolean allowed(ChessBoard board, ChessPiece piece, ChessPosition start,
         ChessPosition end) {
-        int startX = start.getX();
-        int startY = start.getY();
-        int endX = end.getX();
-        int endY = end.getY();
+        int startX = start.getRow();
+        int startY = start.getCol();
+        int endX = end.getRow();
+        int endY = end.getCol();
 
         if (start.equals(end)) {
             return false;

@@ -10,10 +10,10 @@ public class KnightMovement implements MoveType {
     @Override
     public boolean allowed(ChessBoard board, ChessPiece piece, ChessPosition start,
         ChessPosition end) {
-        int startX = start.getX();
-        int startY = start.getY();
-        int endX = end.getX();
-        int endY = end.getY();
+        int startX = start.getRow();
+        int startY = start.getCol();
+        int endX = end.getRow();
+        int endY = end.getCol();
 
         int differenceX = Math.abs(startX - endX);
         int differenceY = Math.abs(startY - endY);

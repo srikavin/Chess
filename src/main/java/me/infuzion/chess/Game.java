@@ -69,7 +69,7 @@ public class Game {
             return false;
         }
 
-        ChessPiece startPiece = board.getPieces()[start.getX()][start.getY()];
+        ChessPiece startPiece = board.getPieces()[start.getRow()][start.getCol()];
         if (startPiece == null) {
             System.out.println("null");
             return false;
