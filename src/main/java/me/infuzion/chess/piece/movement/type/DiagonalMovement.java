@@ -23,6 +23,7 @@ public class DiagonalMovement implements MoveType {
         }
 
         if (Math.abs(startX - endX) != Math.abs(startY - endY)) {
+            System.out.println(1);
             return false;
         }
 
@@ -32,9 +33,12 @@ public class DiagonalMovement implements MoveType {
 
         int curX = startX;
         int curY = startY;
+        curX += xMovement;
+        curY += yMovement;
         while (true) {
             // Returns false if out of bounds
             if (curX > 8 || curX < 0 || curY > 8 || curY < 0) {
+                System.out.println(2);
                 return false;
             }
             // Returns true if the current x and y match the ending x and y
@@ -43,7 +47,8 @@ public class DiagonalMovement implements MoveType {
             }
             // Checks if the current piece is null. If it isn't return false because a piece is in
             // the way of movement
-            if (board.getPieces()[curX][curY] != null) {
+            if (board.getPiece(curX, curY) != null) {
+                System.out.println(board.getPiece(curX, curY));
                 return false;
             }
             curX += xMovement;

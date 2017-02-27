@@ -14,25 +14,25 @@ public class RowMovement implements MoveType {
             return false;
         }
         ChessPiece[][] pieces = board.getPieces();
-        int cX = start.getX();
-        int cY = start.getY();
-        int eX = end.getX();
-        int eY = end.getY();
-        if (cX != eX && cY != eY) {
+        int cRow = start.getX();
+        int cCol = start.getY();
+        int eRow = end.getX();
+        int eCol = end.getY();
+        if (cRow != eRow && cCol != eCol) {
             return false;
         }
-        if (cX != eX) {
-            int offset = getOffset(cX, eX);
-            for (int i = cX + offset; i != eX; i += offset) {
-                if (pieces[i][cY] != null) {
+        if (cRow != eRow) {
+            int offset = getOffset(cRow, eRow);
+            for (int i = cRow + offset; i != eRow; i += offset) {
+                if (board.getPiece(i, cCol) != null) {
                     return false;
                 }
             }
         }
-        if (cY != eY) {
-            int offset = getOffset(cY, eY);
-            for (int i = cY + offset; i != eY; i += offset) {
-                if (pieces[cX][i] != null) {
+        if (cCol != eCol) {
+            int offset = getOffset(cCol, eCol);
+            for (int i = cCol + offset; i != eCol; i += offset) {
+                if (board.getPiece(cRow, i) != null) {
                     return false;
                 }
             }
