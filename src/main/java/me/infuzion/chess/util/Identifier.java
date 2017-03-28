@@ -1,16 +1,16 @@
 package me.infuzion.chess.util;
 
-public class GameIdentifier {
+public class Identifier {
 
     private final static RandomString generator = new RandomString(16);
 
     private final String id;
 
-    public GameIdentifier(String id) {
+    public Identifier(String id) {
         this.id = id;
     }
 
-    public GameIdentifier() {
+    public Identifier() {
         id = generator.nextString();
     }
 
@@ -20,10 +20,7 @@ public class GameIdentifier {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof GameIdentifier) {
-            return id.equals(((GameIdentifier) obj).getId());
-        }
-        return false;
+        return obj instanceof Identifier && id.equals(((Identifier) obj).getId());
     }
 
     @Override

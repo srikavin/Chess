@@ -1,63 +1,24 @@
 package me.infuzion.chess;
 
+import com.sun.istack.internal.Nullable;
+import me.infuzion.chess.piece.*;
+import me.infuzion.chess.piece.movement.ChessMove;
+import me.infuzion.chess.util.PGNParser;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import static me.infuzion.chess.piece.Color.BLACK;
 import static me.infuzion.chess.piece.Color.WHITE;
-import static me.infuzion.chess.piece.PieceType.BISHOP;
-import static me.infuzion.chess.piece.PieceType.KING;
-import static me.infuzion.chess.piece.PieceType.KNIGHT;
-import static me.infuzion.chess.piece.PieceType.PAWN;
-import static me.infuzion.chess.piece.PieceType.QUEEN;
-import static me.infuzion.chess.piece.PieceType.ROOK;
+import static me.infuzion.chess.piece.PieceType.*;
 
-import me.infuzion.chess.piece.Bishop;
-import me.infuzion.chess.piece.Color;
-import me.infuzion.chess.piece.King;
-import me.infuzion.chess.piece.Knight;
-import me.infuzion.chess.piece.Pawn;
-import me.infuzion.chess.piece.PieceType;
-import me.infuzion.chess.piece.Queen;
-import me.infuzion.chess.piece.Rook;
+public class ChessBoard {
 
-public class ChessBoard implements Cloneable {
-
-    private static final ChessBoard DEFAULT_BOARD;
-
-    static {
-        final PieceType[][] pieces = {
-            {ROOK, KNIGHT, BISHOP, KING, QUEEN, BISHOP, KNIGHT, ROOK},
-            {PAWN, PAWN, PAWN, PAWN, PAWN, PAWN, PAWN, PAWN},
-            {},
-            {},
-            {},
-            {},
-            {PAWN, PAWN, PAWN, PAWN, PAWN, PAWN, PAWN, PAWN},
-            {ROOK, KNIGHT, BISHOP, KING, QUEEN, BISHOP, KNIGHT, ROOK}
-        };
-        final Color[][] boardColor = {
-            {WHITE, BLACK, WHITE, BLACK, WHITE, BLACK, WHITE, BLACK},
-            {BLACK, WHITE, BLACK, WHITE, BLACK, WHITE, BLACK, WHITE},
-            {WHITE, BLACK, WHITE, BLACK, WHITE, BLACK, WHITE, BLACK},
-            {BLACK, WHITE, BLACK, WHITE, BLACK, WHITE, BLACK, WHITE},
-            {WHITE, BLACK, WHITE, BLACK, WHITE, BLACK, WHITE, BLACK},
-            {BLACK, WHITE, BLACK, WHITE, BLACK, WHITE, BLACK, WHITE},
-            {WHITE, BLACK, WHITE, BLACK, WHITE, BLACK, WHITE, BLACK},
-            {BLACK, WHITE, BLACK, WHITE, BLACK, WHITE, BLACK, WHITE},
-        };
-        final Color[][] pieceColors = {
-            {WHITE, WHITE, WHITE, WHITE, WHITE, WHITE, WHITE, WHITE},
-            {WHITE, WHITE, WHITE, WHITE, WHITE, WHITE, WHITE, WHITE},
-            {},
-            {},
-            {},
-            {},
-            {BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK},
-            {BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK}
-        };
-        DEFAULT_BOARD = new ChessBoard(pieces, boardColor, pieceColors);
-    }
-
-    private final ChessPiece[][] pieces;
     private final Color[][] boardColors;
+    private final List<String> moves = new ArrayList<>();
+    private final BoardData data;
+    @SuppressWarnings("FieldCanBeLocal")
+    private ChessMove lastMove = null;
 
     public ChessBoard(PieceType[][] pieceTypes, Color[][] boardColor, Color[][] pieceColors) {
         if (pieceTypes.length == 8 && boardColor.length == 8) {
@@ -70,7 +31,7 @@ public class ChessBoard implements Cloneable {
             throw new RuntimeException("Invalid input array.");
         }
         this.boardColors = boardColor;
-        this.pieces = new ChessPiece[8][8];
+        ChessPiece[][] pieces = new ChessPiece[8][8];
         for (int i = 0; i < 8; i++) {
             PieceType[] curTypes = pieceTypes[i];
             Color[] curColors = pieceColors[i];
@@ -109,57 +70,198 @@ public class ChessBoard implements Cloneable {
                             break;
                         }
                         throw new RuntimeException(
-                            "Unknown input piece type: " + curTypes[i].name());
+                                "Unknown input piece type: " + curTypes[i].name());
                 }
                 pieces[j][i] = piece;
             }
         }
+        data = new BoardData(pieces);
     }
 
-    public static void main(String[] str) {
-        ChessBoard a = ChessBoard.DEFAULT_BOARD;
+    private static ChessBoard getChessBoard() {
+        final PieceType[][] pieces = {
+                {ROOK, KNIGHT, BISHOP, QUEEN, KING, BISHOP, KNIGHT, ROOK},
+                {PAWN, PAWN, PAWN, PAWN, PAWN, PAWN, PAWN, PAWN},
+                {},
+                {},
+                {},
+                {},
+                {PAWN, PAWN, PAWN, PAWN, PAWN, PAWN, PAWN, PAWN},
+                {ROOK, KNIGHT, BISHOP, QUEEN, KING, BISHOP, KNIGHT, ROOK}
+        };
+        final Color[][] boardColor = {
+                {WHITE, BLACK, WHITE, BLACK, WHITE, BLACK, WHITE, BLACK},
+                {BLACK, WHITE, BLACK, WHITE, BLACK, WHITE, BLACK, WHITE},
+                {WHITE, BLACK, WHITE, BLACK, WHITE, BLACK, WHITE, BLACK},
+                {BLACK, WHITE, BLACK, WHITE, BLACK, WHITE, BLACK, WHITE},
+                {WHITE, BLACK, WHITE, BLACK, WHITE, BLACK, WHITE, BLACK},
+                {BLACK, WHITE, BLACK, WHITE, BLACK, WHITE, BLACK, WHITE},
+                {WHITE, BLACK, WHITE, BLACK, WHITE, BLACK, WHITE, BLACK},
+                {BLACK, WHITE, BLACK, WHITE, BLACK, WHITE, BLACK, WHITE},
+        };
+        final Color[][] pieceColors = {
+                {BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK},
+                {BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK},
+                {},
+                {},
+                {},
+                {},
+                {WHITE, WHITE, WHITE, WHITE, WHITE, WHITE, WHITE, WHITE},
+                {WHITE, WHITE, WHITE, WHITE, WHITE, WHITE, WHITE, WHITE}
+        };
+        return new ChessBoard(pieces, boardColor, pieceColors);
     }
 
     public static ChessBoard getDefaultBoard() {
-        try {
-            return (ChessBoard) DEFAULT_BOARD.clone();
-        } catch (CloneNotSupportedException e) {
-            throw new RuntimeException(e);
+        return getChessBoard();
+    }
+
+    public static boolean isUnderCheck(Color side, BoardData data) {
+        return isUnderCheck(side, data.getPieces());
+    }
+
+    public static boolean isUnderCheck(Color side, ChessPiece[][] pieces) {
+        King king = getKing(side, pieces);
+        if (king == null) {
+            return false;
         }
+        return piecesThatCanMoveTo(king.currentPosition(), new BoardData(pieces),
+                getOppositeColor(side)).size() > 0;
     }
 
-    public ChessPiece[][] getPieces() {
-        return pieces.clone();
+    public static List<ChessPiece> piecesThatCanMoveTo(ChessPosition position, BoardData data,
+                                                       @Nullable Color color) {
+        boolean skipColor = color == null;
+        List<ChessPiece> piecesToRet = new ArrayList<>();
+        for (ChessPiece[] pieceArr : data.getPieces()) {
+            for (ChessPiece piece : pieceArr) {
+                if (piece == null) {
+                    continue;
+                }
+                if (skipColor || piece.getColor() == color) {
+                    if (piece.allowed(data, position, true)) {
+                        piecesToRet.add(piece);
+                    }
+                }
+            }
+        }
+        return piecesToRet;
     }
 
-    public void setPiece(int x, int y, ChessPiece piece) {
-        pieces[y][x] = piece;
+    private static King getKing(Color color, ChessPiece[][] pieces) {
+        for (ChessPiece[] pieceArr : pieces) {
+            for (ChessPiece piece : pieceArr) {
+                if (piece == null) {
+                    continue;
+                }
+                if (piece.getColor() == color && piece instanceof King) {
+                    return (King) piece;
+                }
+            }
+        }
+        return null;
     }
 
-    public void setPiece(ChessPosition pos, ChessPiece piece) {
-        setPiece(pos.getRow(), pos.getCol(), piece);
+    private static Color getOppositeColor(Color color) {
+        if (color == WHITE) {
+            return BLACK;
+        }
+        if (color == BLACK) {
+            return WHITE;
+        }
+        return null;
+
     }
 
-    public ChessPiece getPiece(ChessPosition pos) {
-        return getPiece(pos.getRow(), pos.getCol());
+    public static ChessBoard fromPGNString(String pgn) {
+        ChessBoard board = getDefaultBoard();
+        PGNParser.executeMoves(board, pgn, WHITE);
+        return board;
     }
 
-    public ChessPiece getPiece(int row, int col) {
-        return pieces[col][row];
+    public static boolean checkAfterMove(BoardData data, Color side, ChessPosition start,
+                                         ChessPosition end) {
+
+        ChessPiece piece = data.getPiece(start).clone();
+        ChessPiece[][] pieceClone = data.getPieces();
+        pieceClone[start.getCol()][start.getRow()] = null;
+        piece.setPosition(end);
+        pieceClone[end.getCol()][end.getRow()] = piece;
+        return isUnderCheck(side, pieceClone);
+    }
+
+    public BoardData getData() {
+        return data;
+    }
+
+    public boolean isUnderCheck(Color side) {
+        return isUnderCheck(side, data.getPieces());
     }
 
     public Color[][] getBoardColors() {
         return boardColors;
     }
 
+    public void move(ChessPiece piece, ChessPosition start, ChessPosition end) {
+        lastMove = new ChessMove(start, end, data.getPiece(start), data.getPiece(end));
+
+        char abr = piece.getType().getAbbreviation();
+        List<ChessPiece> moveable = piecesThatCanMoveTo(end, data, piece.getColor());
+        boolean ambiguous;
+
+        if (moveable.size() == 0) {
+            throw new RuntimeException("INVALID MOVE");
+        }
+
+        if (moveable.size() == 1) {
+            ambiguous = false;
+        } else {
+            int counter = 0;
+            for (ChessPiece e : moveable) {
+                if (e.getType() == piece.getType()) {
+                    counter++;
+                }
+            }
+            ambiguous = counter > 1;
+        }
+        moves.add(generateAlgebraicNotation(abr, start, end, ambiguous));
+        System.out.println(toString());
+    }
+
+    /**
+     * @param move Move in algebraic notation
+     * @return Whether or not the move was executed successfully
+     */
+    public boolean executeMove(String move, Color color) {
+        return PGNParser.executeMove(this, move, color);
+    }
+
+    //
+    private String generateAlgebraicNotation(char abbr, ChessPosition start,
+                                             ChessPosition end, boolean ambiguous) {
+        String capt = data.getPiece(end) != null ? "x" : "";
+
+        if (!ambiguous) {
+            return abbr + capt + end.getPosition();
+        } else {
+            return abbr + start.getPosition() + capt + end.getPosition();
+        }
+    }
+
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        for (ChessPiece[] e : pieces) {
-            for (ChessPiece f : e) {
-                builder.append(f == null ? "null" : f.getType()).append(' ');
+        int count = 1;
+        boolean writing = false;
+        for (String move : moves) {
+            if (!writing) {
+                builder.append(count).append(". ").append(move);
+                writing = true;
+            } else {
+                builder.append(" ").append(move).append(" ");
+                writing = false;
+                count++;
             }
-            builder.append('\n');
         }
         return builder.toString();
     }

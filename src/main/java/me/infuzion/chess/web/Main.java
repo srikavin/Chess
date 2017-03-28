@@ -1,8 +1,9 @@
-package me.infuzion.chess;
+package me.infuzion.chess.web;
+
+import me.infuzion.web.server.Server;
 
 import java.io.IOException;
 import java.net.ServerSocket;
-import me.infuzion.web.server.Server;
 
 public class Main {
 

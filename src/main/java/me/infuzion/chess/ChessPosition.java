@@ -2,6 +2,8 @@ package me.infuzion.chess;
 
 public class ChessPosition {
 
+    private final static char[] columns = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'};
+
     private final int row;
     private final int col;
 
@@ -16,8 +18,30 @@ public class ChessPosition {
         this.col = col;
     }
 
+    public ChessPosition(int row, char col) {
+        this(row, col - 97);
+    }
+
+    public static int colCharToInt(char col) {
+        col = Character.toLowerCase(col);
+        for (int i = 0; i < columns.length; i++) {
+            if (col == columns[i]) {
+                return i;
+            }
+        }
+        throw new RuntimeException("Invalid Input: " + col);
+    }
+
     public int getRow() {
         return row;
+    }
+
+    public char getColChar() {
+        return columns[col];
+    }
+
+    public String getPosition() {
+        return columns[col] + "" + (8 - row);
     }
 
     public int getCol() {

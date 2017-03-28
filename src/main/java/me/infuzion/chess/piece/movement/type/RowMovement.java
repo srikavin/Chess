@@ -1,6 +1,6 @@
 package me.infuzion.chess.piece.movement.type;
 
-import me.infuzion.chess.ChessBoard;
+import me.infuzion.chess.BoardData;
 import me.infuzion.chess.ChessPiece;
 import me.infuzion.chess.ChessPosition;
 import me.infuzion.chess.piece.movement.MoveType;
@@ -8,8 +8,8 @@ import me.infuzion.chess.piece.movement.MoveType;
 public class RowMovement implements MoveType {
 
     @Override
-    public boolean allowed(ChessBoard board, ChessPiece piece, ChessPosition start,
-        ChessPosition end) {
+    public boolean allowed(BoardData board, ChessPiece piece, ChessPosition start,
+                           ChessPosition end) {
         if (start.equals(end)) {
             return false;
         }

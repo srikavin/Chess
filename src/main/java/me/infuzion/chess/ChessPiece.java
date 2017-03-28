@@ -4,8 +4,9 @@ import me.infuzion.chess.piece.Color;
 import me.infuzion.chess.piece.PieceType;
 import me.infuzion.chess.piece.movement.MoveType;
 import me.infuzion.chess.piece.movement.MoveTypes;
+import me.infuzion.chess.piece.movement.type.CheckMovement;
 
-public abstract class ChessPiece {
+public abstract class ChessPiece implements Cloneable {
 
     private final Color color;
     private ChessPosition position;
@@ -16,7 +17,7 @@ public abstract class ChessPiece {
     public ChessPiece(Color color, ChessPosition position) {
         this.color = color;
         this.position = position;
-        setRequiredTypes(MoveTypes.NO_FRIENDLY_CAPTURES);
+        setRequiredTypes(MoveTypes.NO_FRIENDLY_CAPTURES, MoveTypes.CHECK_MOVEMENT);
     }
 
     public final PieceType getType() {
@@ -27,9 +28,13 @@ public abstract class ChessPiece {
         this.type = type;
     }
 
-    public boolean allowed(ChessBoard board, ChessPosition end) {
+    public boolean allowed(BoardData board, ChessPosition end, boolean ignoreCheck) {
         for (MoveType e : requiredTypes) {
+            if (ignoreCheck && e instanceof CheckMovement) {
+                continue;
+            }
             if (!e.allowed(board, this, position, end)) {
+                System.out.println(e.getClass() + " Returned false!");
                 return false;
             }
         }
@@ -41,10 +46,19 @@ public abstract class ChessPiece {
         return false;
     }
 
+    public boolean allowed(BoardData board, ChessPosition end) {
+        return allowed(board, end, false);
+    }
+
+    public boolean allowed(ChessBoard board, ChessPosition end) {
+        return allowed(board.getData(), end);
+    }
+
     public boolean move(ChessBoard board, ChessPosition end) {
-        if (allowed(board, end)) {
-            board.setPiece(position, null);
-            board.setPiece(end, this);
+        if (allowed(board.getData(), end)) {
+            board.move(this, position, end);
+            board.getData().setPiece(position, null);
+            board.getData().setPiece(end, this);
             this.position = end;
             return true;
         }
@@ -84,5 +98,17 @@ public abstract class ChessPiece {
 
     public ChessPosition currentPosition() {
         return position;
+    }
+
+    public void setPosition(ChessPosition pos) {
+        this.position = pos;
+    }
+
+    public ChessPiece clone() {
+        try {
+            return (ChessPiece) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

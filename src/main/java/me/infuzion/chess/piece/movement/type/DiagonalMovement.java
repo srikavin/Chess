@@ -1,6 +1,6 @@
 package me.infuzion.chess.piece.movement.type;
 
-import me.infuzion.chess.ChessBoard;
+import me.infuzion.chess.BoardData;
 import me.infuzion.chess.ChessPiece;
 import me.infuzion.chess.ChessPosition;
 import me.infuzion.chess.piece.movement.MoveType;
@@ -11,8 +11,8 @@ public class DiagonalMovement implements MoveType {
      * @inheritDoc
      */
     @Override
-    public boolean allowed(ChessBoard board, ChessPiece piece, ChessPosition start,
-        ChessPosition end) {
+    public boolean allowed(BoardData board, ChessPiece piece, ChessPosition start,
+                           ChessPosition end) {
         int startX = start.getRow();
         int startY = start.getCol();
         int endX = end.getRow();
@@ -23,7 +23,6 @@ public class DiagonalMovement implements MoveType {
         }
 
         if (Math.abs(startX - endX) != Math.abs(startY - endY)) {
-            System.out.println(1);
             return false;
         }
 
@@ -38,7 +37,6 @@ public class DiagonalMovement implements MoveType {
         while (true) {
             // Returns false if out of bounds
             if (curX > 8 || curX < 0 || curY > 8 || curY < 0) {
-                System.out.println(2);
                 return false;
             }
             // Returns true if the current x and y match the ending x and y
@@ -48,7 +46,6 @@ public class DiagonalMovement implements MoveType {
             // Checks if the current piece is null. If it isn't return false because a piece is in
             // the way of movement
             if (board.getPiece(curX, curY) != null) {
-                System.out.println(board.getPiece(curX, curY));
                 return false;
             }
             curX += xMovement;
