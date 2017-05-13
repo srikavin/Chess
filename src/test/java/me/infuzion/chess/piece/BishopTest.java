@@ -1,12 +1,10 @@
 package me.infuzion.chess.piece;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import me.infuzion.chess.ChessBoard;
-import me.infuzion.chess.ChessPosition;
+import me.infuzion.chess.board.ChessBoard;
+import me.infuzion.chess.board.ChessPosition;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 class BishopTest {
 
@@ -22,10 +20,10 @@ class BishopTest {
         Bishop bishop = new Bishop(Color.WHITE, new ChessPosition(3, 3));
 
         assertTrue(bishop.allowed(ChessBoard.getDefaultBoard(), new ChessPosition(4, 4)));
-        assertTrue(bishop.allowed(ChessBoard.getDefaultBoard(), new ChessPosition(6, 6)));
-        assertTrue(bishop.allowed(ChessBoard.getDefaultBoard(), new ChessPosition(6, 6)));
+        assertTrue(bishop.allowed(ChessBoard.getDefaultBoard(), new ChessPosition(1, 5)));
 
         assertFalse(bishop.allowed(ChessBoard.getDefaultBoard(), new ChessPosition(4, 5)));
+        assertFalse(bishop.allowed(ChessBoard.getDefaultBoard(), new ChessPosition(6, 6)));
         assertFalse(bishop.allowed(ChessBoard.getDefaultBoard(), new ChessPosition(3, 5)));
         assertFalse(bishop.allowed(ChessBoard.getDefaultBoard(), new ChessPosition(2, 1)));
         assertFalse(bishop.allowed(ChessBoard.getDefaultBoard(), new ChessPosition(6, 7)));

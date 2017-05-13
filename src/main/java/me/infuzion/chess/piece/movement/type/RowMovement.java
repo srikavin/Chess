@@ -1,8 +1,8 @@
 package me.infuzion.chess.piece.movement.type;
 
-import me.infuzion.chess.BoardData;
-import me.infuzion.chess.ChessPiece;
-import me.infuzion.chess.ChessPosition;
+import me.infuzion.chess.board.BoardData;
+import me.infuzion.chess.board.ChessPosition;
+import me.infuzion.chess.piece.ChessPiece;
 import me.infuzion.chess.piece.movement.MoveType;
 
 public class RowMovement implements MoveType {
@@ -40,7 +40,7 @@ public class RowMovement implements MoveType {
         return true;
     }
 
-    private int getOffset(int current, int end) {
+    private static int getOffset(int current, int end) {
         if (current < end) {
             return 1;
         } else {

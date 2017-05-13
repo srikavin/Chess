@@ -1,8 +1,7 @@
-package me.infuzion.chess;
+package me.infuzion.chess.board;
 
 import com.sun.istack.internal.Nullable;
 import me.infuzion.chess.piece.*;
-import me.infuzion.chess.piece.movement.ChessMove;
 import me.infuzion.chess.util.PGNParser;
 
 import java.util.ArrayList;
@@ -17,8 +16,6 @@ public class ChessBoard {
     private final Color[][] boardColors;
     private final List<String> moves = new ArrayList<>();
     private final BoardData data;
-    @SuppressWarnings("FieldCanBeLocal")
-    private ChessMove lastMove = null;
 
     public ChessBoard(PieceType[][] pieceTypes, Color[][] boardColor, Color[][] pieceColors) {
         if (pieceTypes.length == 8 && boardColor.length == 8) {
@@ -122,11 +119,7 @@ public class ChessBoard {
 
     public static boolean isUnderCheck(Color side, ChessPiece[][] pieces) {
         King king = getKing(side, pieces);
-        if (king == null) {
-            return false;
-        }
-        return piecesThatCanMoveTo(king.currentPosition(), new BoardData(pieces),
-                getOppositeColor(side)).size() > 0;
+        return king != null && piecesThatCanMoveTo(king.currentPosition(), new BoardData(pieces), getOppositeColor(side)).size() > 0;
     }
 
     public static List<ChessPiece> piecesThatCanMoveTo(ChessPosition position, BoardData data,
@@ -190,6 +183,37 @@ public class ChessBoard {
         return isUnderCheck(side, pieceClone);
     }
 
+    public static void main(String[] a) {
+        System.out.println(ChessBoard.getDefaultBoard().toFen());
+    }
+
+    public String toFen() {
+        StringBuilder builder = new StringBuilder();
+        ChessPiece[][] pieces = data.getPieces();
+        for (int i = 0; i < pieces.length; i++) {
+            int counter = 0;
+            for (int j = 0; j < pieces[i].length; j++) {
+                ChessPiece piece = pieces[j][i];
+                if (piece == null) {
+                    counter++;
+                    continue;
+                }
+                if (counter > 0) {
+                    builder.append(counter);
+                    counter = 0;
+                }
+                char abbr = piece.getType().getAbbreviation();
+                char p = piece.getColor() == WHITE ? Character.toUpperCase(abbr) : Character.toLowerCase(abbr);
+                builder.append(p);
+            }
+            if (counter == 8) {
+                builder.append(counter);
+            }
+            builder.append('/');
+        }
+        return builder.deleteCharAt(builder.lastIndexOf("/")).toString();
+    }
+
     public BoardData getData() {
         return data;
     }
@@ -203,21 +227,19 @@ public class ChessBoard {
     }
 
     public void move(ChessPiece piece, ChessPosition start, ChessPosition end) {
-        lastMove = new ChessMove(start, end, data.getPiece(start), data.getPiece(end));
-
         char abr = piece.getType().getAbbreviation();
-        List<ChessPiece> moveable = piecesThatCanMoveTo(end, data, piece.getColor());
+        List<ChessPiece> movable = piecesThatCanMoveTo(end, data, piece.getColor());
         boolean ambiguous;
 
-        if (moveable.size() == 0) {
+        if (movable.size() == 0) {
             throw new RuntimeException("INVALID MOVE");
         }
 
-        if (moveable.size() == 1) {
+        if (movable.size() == 1) {
             ambiguous = false;
         } else {
             int counter = 0;
-            for (ChessPiece e : moveable) {
+            for (ChessPiece e : movable) {
                 if (e.getType() == piece.getType()) {
                     counter++;
                 }
@@ -225,7 +247,6 @@ public class ChessBoard {
             ambiguous = counter > 1;
         }
         moves.add(generateAlgebraicNotation(abr, start, end, ambiguous));
-        System.out.println(toString());
     }
 
     /**
@@ -251,6 +272,23 @@ public class ChessBoard {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                ChessPiece piece = data.getPiece(i, j);
+                if (piece == null) {
+                    builder.append(' ');
+                } else {
+                    builder.append(data.getPiece(i, j).getType().getAbbreviation());
+                }
+                builder.append(' ');
+            }
+            builder.append('\n');
+        }
+        return builder.toString();
+    }
+
+    public String toPGNString() {
+        StringBuilder builder = new StringBuilder();
         int count = 1;
         boolean writing = false;
         for (String move : moves) {
@@ -258,7 +296,7 @@ public class ChessBoard {
                 builder.append(count).append(". ").append(move);
                 writing = true;
             } else {
-                builder.append(" ").append(move).append(" ");
+                builder.append(' ').append(move).append(' ');
                 writing = false;
                 count++;
             }

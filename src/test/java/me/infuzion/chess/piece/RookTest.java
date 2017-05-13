@@ -1,33 +1,33 @@
 package me.infuzion.chess.piece;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import me.infuzion.chess.ChessBoard;
-import me.infuzion.chess.ChessPosition;
+import me.infuzion.chess.board.ChessBoard;
+import me.infuzion.chess.board.ChessPosition;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 class RookTest {
 
     @Test
     void getType() {
         Rook rook = new Rook(Color.BLACK, new ChessPosition(1, 1));
-        assertTrue(rook.getType() == PieceType.ROOK);
+        assertEquals(rook.getType(), PieceType.ROOK);
     }
 
     @Test
     void allowed() {
-        Rook rook = new Rook(Color.WHITE, new ChessPosition(5, 4));
-        assertTrue(rook.allowed(ChessBoard.getDefaultBoard(), new ChessPosition(5, 5)));
-        assertTrue(rook.allowed(ChessBoard.getDefaultBoard(), new ChessPosition(6, 4)));
-        assertTrue(rook.allowed(ChessBoard.getDefaultBoard(), new ChessPosition(5, 5)));
-        assertTrue(rook.allowed(ChessBoard.getDefaultBoard(), new ChessPosition(2, 4)));
+        Rook rook = new Rook(Color.WHITE, new ChessPosition("e3"));
+        assertTrue(rook.allowed(ChessBoard.getDefaultBoard(), new ChessPosition("f3")));
+        assertTrue(rook.allowed(ChessBoard.getDefaultBoard(), new ChessPosition("e7")));
+        assertTrue(rook.allowed(ChessBoard.getDefaultBoard(), new ChessPosition("e6")));
+        assertTrue(rook.allowed(ChessBoard.getDefaultBoard(), new ChessPosition("e5")));
+        assertTrue(rook.allowed(ChessBoard.getDefaultBoard(), new ChessPosition("e4")));
 
-        assertFalse(rook.allowed(ChessBoard.getDefaultBoard(), new ChessPosition(6, 5)));
-        assertFalse(rook.allowed(ChessBoard.getDefaultBoard(), new ChessPosition(0, 5)));
-        assertFalse(rook.allowed(ChessBoard.getDefaultBoard(), new ChessPosition(4, 5)));
-        assertFalse(rook.allowed(ChessBoard.getDefaultBoard(), new ChessPosition(7, 5)));
-        assertFalse(rook.allowed(ChessBoard.getDefaultBoard(), new ChessPosition(5, 4)));
+        assertFalse(rook.allowed(ChessBoard.getDefaultBoard(), new ChessPosition("e2")));
+        assertFalse(rook.allowed(ChessBoard.getDefaultBoard(), new ChessPosition("d4")));
+        assertFalse(rook.allowed(ChessBoard.getDefaultBoard(), new ChessPosition("a8")));
+        assertFalse(rook.allowed(ChessBoard.getDefaultBoard(), new ChessPosition("a1")));
+        assertFalse(rook.allowed(ChessBoard.getDefaultBoard(), new ChessPosition("f7")));
 
     }
 

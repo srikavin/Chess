@@ -1,35 +1,39 @@
-package me.infuzion.chess;
+package me.infuzion.chess.board;
 
 public class ChessPosition {
 
-    private final static char[] columns = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'};
+    private final static Character[] columns = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'};
 
     private final int row;
     private final int col;
 
     public ChessPosition(int row, int col) {
-        if (row > 8 || row < 0) {
-            throw new RuntimeException("Invalid row value: " + row);
+        if (row >= 8 || row < 0) {
+            throw new IllegalArgumentException("Invalid row value: " + row);
         }
-        if (col > 8 || col < 0) {
-            throw new RuntimeException("Invalid col value: " + col);
+        if (col >= 8 || col < 0) {
+            throw new IllegalArgumentException("Invalid col value: " + col);
         }
         this.row = row;
         this.col = col;
     }
 
     public ChessPosition(int row, char col) {
-        this(row, col - 97);
+        this(col + String.valueOf(row));
+    }
+
+    public ChessPosition(String algebraicNotation) {
+        this(8 - Integer.parseInt(algebraicNotation.substring(1)), colCharToInt(algebraicNotation.charAt(0)));
     }
 
     public static int colCharToInt(char col) {
-        col = Character.toLowerCase(col);
+        char colLowerCase = Character.toLowerCase(col);
         for (int i = 0; i < columns.length; i++) {
-            if (col == columns[i]) {
+            if (colLowerCase == columns[i]) {
                 return i;
             }
         }
-        throw new RuntimeException("Invalid Input: " + col);
+        throw new IllegalArgumentException("Invalid Input: " + colLowerCase);
     }
 
     public int getRow() {
@@ -41,7 +45,7 @@ public class ChessPosition {
     }
 
     public String getPosition() {
-        return columns[col] + "" + (8 - row);
+        return columns[col] + String.valueOf((8 - row));
     }
 
     public int getCol() {
@@ -54,8 +58,8 @@ public class ChessPosition {
             return true;
         }
         if (obj instanceof ChessPosition) {
-            if (((ChessPosition) obj).getRow() == row) {
-                if (((ChessPosition) obj).getCol() == col) {
+            if (((ChessPosition) obj).row == row) {
+                if (((ChessPosition) obj).col == col) {
                     return true;
                 }
             }

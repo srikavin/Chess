@@ -1,12 +1,10 @@
 package me.infuzion.chess.piece;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import me.infuzion.chess.ChessBoard;
-import me.infuzion.chess.ChessPosition;
+import me.infuzion.chess.board.ChessBoard;
+import me.infuzion.chess.board.ChessPosition;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 class PawnTest {
 
@@ -20,47 +18,49 @@ class PawnTest {
     void pawnForward() {
         ChessBoard board = ChessBoard.getDefaultBoard();
 
-        Pawn whitePawn = new Pawn(Color.WHITE, new ChessPosition(1, 1));
+        Pawn blackPawn = new Pawn(Color.BLACK, new ChessPosition(1, 1));
+        Pawn whitePawn = new Pawn(Color.WHITE, new ChessPosition(6, 1));
 
         //Moving forward 2
-        assertTrue(whitePawn.allowed(board, new ChessPosition(3, 1)));
+        assertTrue(blackPawn.allowed(board, new ChessPosition(3, 1)));
         //Moving forward 1
-        assertTrue(whitePawn.allowed(board, new ChessPosition(2, 1)));
+        assertTrue(blackPawn.allowed(board, new ChessPosition(2, 1)));
 
-        assertFalse(whitePawn.allowed(board, new ChessPosition(2, 2)));
-        assertFalse(whitePawn.allowed(board, new ChessPosition(0, 1)));
+        assertFalse(blackPawn.allowed(board, new ChessPosition(2, 2)));
+        assertFalse(blackPawn.allowed(board, new ChessPosition(0, 1)));
 
-        Pawn blackPawn = new Pawn(Color.BLACK, new ChessPosition(6, 1));
         //Moving forward 2
-        assertTrue(blackPawn.allowed(board, new ChessPosition(4, 1)));
+        assertTrue(whitePawn.allowed(board, new ChessPosition(4, 1)));
         //Moving forward 1
-        assertTrue(blackPawn.allowed(board, new ChessPosition(5, 1)));
+        assertTrue(whitePawn.allowed(board, new ChessPosition(5, 1)));
 
-        assertFalse(blackPawn.allowed(board, new ChessPosition(5, 2)));
-        assertFalse(blackPawn.allowed(board, new ChessPosition(5, 3)));
+        assertFalse(whitePawn.allowed(board, new ChessPosition(5, 2)));
+        assertFalse(whitePawn.allowed(board, new ChessPosition(5, 3)));
     }
 
     @Test
     void pawnCapturing() {
         ChessBoard board = ChessBoard.getDefaultBoard();
 
-        Pawn whitePawn = new Pawn(Color.WHITE, new ChessPosition(5, 2));
+        Pawn blackPawn = new Pawn(Color.BLACK, new ChessPosition("c3"));
+        Pawn whitePawn = new Pawn(Color.WHITE, new ChessPosition("b6"));
+
         //Attacking left
-        assertTrue(whitePawn.allowed(board, new ChessPosition(6, 1)));
+        assertTrue(whitePawn.allowed(board, new ChessPosition("a7")));
         //Attacking right
-        assertTrue(whitePawn.allowed(board, new ChessPosition(6, 3)));
+        assertTrue(whitePawn.allowed(board, new ChessPosition("c7")));
 
-        assertFalse(whitePawn.allowed(board, new ChessPosition(6, 2)));
-        assertFalse(whitePawn.allowed(board, new ChessPosition(7, 2)));
+        assertFalse(whitePawn.allowed(board, new ChessPosition("a6")));
+        assertFalse(whitePawn.allowed(board, new ChessPosition("b5")));
+        assertFalse(whitePawn.allowed(board, new ChessPosition("c6")));
 
-        Pawn blackPawn = new Pawn(Color.BLACK, new ChessPosition(2, 3));
         //Attacking left
-        assertTrue(blackPawn.allowed(board, new ChessPosition(1, 2)));
+        assertTrue(blackPawn.allowed(board, new ChessPosition("b2")));
         //Attacking right
-        assertTrue(blackPawn.allowed(board, new ChessPosition(1, 4)));
+        assertTrue(blackPawn.allowed(board, new ChessPosition("d2")));
 
-        assertFalse(blackPawn.allowed(board, new ChessPosition(0, 3)));
-        assertFalse(blackPawn.allowed(board, new ChessPosition(1, 3)));
+        assertFalse(blackPawn.allowed(board, new ChessPosition("c4")));
+        assertFalse(blackPawn.allowed(board, new ChessPosition("d3")));
     }
 
 }

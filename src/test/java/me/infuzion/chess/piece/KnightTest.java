@@ -1,12 +1,10 @@
 package me.infuzion.chess.piece;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import me.infuzion.chess.ChessBoard;
-import me.infuzion.chess.ChessPosition;
+import me.infuzion.chess.board.ChessBoard;
+import me.infuzion.chess.board.ChessPosition;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 class KnightTest {
 
@@ -25,7 +23,6 @@ class KnightTest {
         assertTrue(knight.allowed(def, new ChessPosition(5, 2)));
         assertTrue(knight.allowed(def, new ChessPosition(4, 1)));
         assertTrue(knight.allowed(def, new ChessPosition(2, 1)));
-        assertTrue(knight.allowed(def, new ChessPosition(1, 2)));
         assertTrue(knight.allowed(def, new ChessPosition(2, 5)));
         assertTrue(knight.allowed(def, new ChessPosition(4, 5)));
 

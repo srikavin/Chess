@@ -7,6 +7,9 @@ public class Identifier {
     private final String id;
 
     public Identifier(String id) {
+        if (id == null) {
+            throw new IllegalArgumentException("Null id!");
+        }
         this.id = id;
     }
 
@@ -20,7 +23,7 @@ public class Identifier {
 
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof Identifier && id.equals(((Identifier) obj).getId());
+        return obj instanceof Identifier && id.equals(((Identifier) obj).id);
     }
 
     @Override

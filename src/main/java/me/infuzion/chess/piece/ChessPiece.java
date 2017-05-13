@@ -1,7 +1,8 @@
-package me.infuzion.chess;
+package me.infuzion.chess.piece;
 
-import me.infuzion.chess.piece.Color;
-import me.infuzion.chess.piece.PieceType;
+import me.infuzion.chess.board.BoardData;
+import me.infuzion.chess.board.ChessBoard;
+import me.infuzion.chess.board.ChessPosition;
 import me.infuzion.chess.piece.movement.MoveType;
 import me.infuzion.chess.piece.movement.MoveTypes;
 import me.infuzion.chess.piece.movement.type.CheckMovement;

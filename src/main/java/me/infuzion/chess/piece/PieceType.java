@@ -14,10 +14,10 @@ public enum PieceType {
         this.abbreviation = abbreviation;
     }
 
-    public static PieceType fromAbrreviation(char abbr) {
-        abbr = Character.toUpperCase(abbr);
+    public static PieceType fromAbbreviation(char abbr) {
+        char abbr1 = Character.toUpperCase(abbr);
         for (PieceType e : PieceType.values()) {
-            if (abbr == e.getAbbreviation()) {
+            if (abbr1 == e.abbreviation) {
                 return e;
             }
         }

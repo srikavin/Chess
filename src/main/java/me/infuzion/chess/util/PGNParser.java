@@ -1,8 +1,8 @@
 package me.infuzion.chess.util;
 
-import me.infuzion.chess.ChessBoard;
-import me.infuzion.chess.ChessPiece;
-import me.infuzion.chess.ChessPosition;
+import me.infuzion.chess.board.ChessBoard;
+import me.infuzion.chess.board.ChessPosition;
+import me.infuzion.chess.piece.ChessPiece;
 import me.infuzion.chess.piece.Color;
 import me.infuzion.chess.piece.PieceType;
 
@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 public class PGNParser {
@@ -34,8 +35,8 @@ public class PGNParser {
         Lexer lexer = new Lexer(move);
         ChessPosition pos1 = null;
         ChessPosition pos2 = null;
-        int file = -1; //col
-        int rank = -1; //row
+        Character file = null; //col
+        int rank; //row
         PieceType type = null;
         boolean lastWasFile = false;
 
@@ -45,11 +46,11 @@ public class PGNParser {
                 break;
             }
             if (token.type == Tokens.FILE) {
-                file = ChessPosition.colCharToInt(token.value.charAt(0));
+                file = token.value.charAt(0);
                 lastWasFile = true;
                 continue;
             } else if (token.type == Tokens.PIECETYPE) {
-                type = PieceType.fromAbrreviation(token.value.charAt(0));
+                type = PieceType.fromAbbreviation(token.value.charAt(0));
             } else if (token.type == Tokens.RANK) {
                 rank = Integer.parseInt(token.value);
                 if (lastWasFile) {
@@ -70,9 +71,12 @@ public class PGNParser {
         }
         if (pos2 == null) {
             PieceType finalType = type;
-            List<ChessPiece> possible = ChessBoard.piecesThatCanMoveTo(pos1, board.getData(), turn)
-                    .stream().filter(piece -> piece.getType() == finalType)
-                    .collect(Collectors.toList());
+            Stream<ChessPiece> stream = ChessBoard.piecesThatCanMoveTo(pos1, board.getData(), turn).stream();
+            if (finalType != null) {
+                stream = stream.filter(piece -> piece.getType() == finalType);
+            }
+            List<ChessPiece> possible = stream.collect(Collectors.toList());
+
             if (possible.size() != 1) {
                 return false;
             }
@@ -100,20 +104,21 @@ public class PGNParser {
         private int index;
         private Character cur;
 
-        public Lexer(String string) {
+        Lexer(String string) {
             this.input = string;
             index = -1;
         }
 
         private void advance() {
             try {
-                cur = input.charAt(++index);
+                index++;
+                cur = input.charAt(index);
             } catch (Exception e) {
                 cur = null;
             }
         }
 
-        public Token getNextToken() {
+        Token getNextToken() {
             advance();
             if (cur == null) {
                 return new Token(Tokens.END, "");
@@ -124,7 +129,7 @@ public class PGNParser {
             if (Character.isDigit(cur)) {
                 return new Token(Tokens.RANK, cur.toString());
             }
-            if (PieceType.fromAbrreviation(cur) != null) {
+            if (PieceType.fromAbbreviation(cur) != null && Character.isUpperCase(cur)) {
                 return new Token(Tokens.PIECETYPE, cur.toString());
             }
             if ('A' <= Character.toUpperCase(cur) && Character.toUpperCase(cur) <= 'H') {
@@ -135,12 +140,12 @@ public class PGNParser {
 
     }
 
-    static class Token {
+    private static class Token {
 
         private final Tokens type;
         private final String value;
 
-        public Token(Tokens type, String value) {
+        Token(Tokens type, String value) {
             this.type = type;
             this.value = value;
         }

@@ -1,8 +1,8 @@
-package me.infuzion.chess.web;
+package me.infuzion.chess.web.game;
 
-import me.infuzion.chess.ChessBoard;
-import me.infuzion.chess.ChessPiece;
-import me.infuzion.chess.ChessPosition;
+import me.infuzion.chess.board.ChessBoard;
+import me.infuzion.chess.board.ChessPosition;
+import me.infuzion.chess.piece.ChessPiece;
 import me.infuzion.chess.piece.Color;
 import me.infuzion.chess.util.Identifier;
 
@@ -11,55 +11,42 @@ import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 
-enum GameStatus {
-    IN_PROGRESS_WHITE,
-    IN_PROGRESS_BLACK,
-    ENDED_DRAW,
-    ENDED_WHITE,
-    ENDED_BLACK,
-    WAITING,
-}
-
 public class Game {
 
     private static final Map<Identifier, Game> idGameMap = new HashMap<>();
     private static final Random random = new Random();
+    public final UUID uuid = UUID.randomUUID();
 
     private final Identifier gameID;
     private final ChessBoard board;
     private final Visibility visibility;
-    private transient final UUID[] players;
-    private UUID whiteSide;
-    private UUID blackSide;
-    private GameStatus status;
+    private Identifier whiteSide;
+    private Identifier blackSide;
+    private GameStatus status = GameStatus.WAITING;
 
-    public Game(Identifier id, String pgn, UUID whiteSide, UUID blackSide) {
+    public Game(Identifier id, String pgn, Identifier whiteSide, Identifier blackSide, GameStatus status) {
         this.gameID = id;
         this.whiteSide = whiteSide;
         this.blackSide = blackSide;
         this.board = ChessBoard.fromPGNString(pgn);
-        players = new UUID[2];
+        this.status = status;
         visibility = Visibility.PUBLIC;
         idGameMap.put(gameID, this);
     }
 
-    public Game(UUID player, Visibility visibility) {
+    public Game(Identifier player, Visibility visibility) {
         this.visibility = visibility;
         gameID = new Identifier();
         idGameMap.put(gameID, this);
 
         board = ChessBoard.getDefaultBoard();
         status = GameStatus.WAITING;
-
-        players = new UUID[2];
-        players[0] = player;
     }
 
     public Game(Identifier id, ChessBoard board, Visibility visibility) {
         this.gameID = id;
         this.board = board;
         this.visibility = visibility;
-        this.players = new UUID[2];
         idGameMap.put(gameID, this);
     }
 
@@ -75,62 +62,80 @@ public class Game {
         return gameID;
     }
 
-    public UUID getBlackSide() {
+    public Identifier getBlackSide() {
         return blackSide;
     }
 
-    public void addPlayer(UUID player) {
-        if (this.players[1] == null && !player.equals(players[0])) {
-            this.players[1] = player;
-            randomize();
+    public boolean addPlayer(Identifier player) {
+        if (player.equals(whiteSide) || player.equals(blackSide)) {
+            return false;
+        }
+        if (random.nextBoolean()) {
+            if (whiteSide == null) {
+                whiteSide = player;
+            } else if (blackSide == null) {
+                blackSide = player;
+            } else {
+                return false;
+            }
+        } else {
+            if (blackSide == null) {
+                blackSide = player;
+            } else if (whiteSide == null) {
+                whiteSide = player;
+            } else {
+                return false;
+            }
+        }
+
+        if (whiteSide != null && blackSide != null) {
             status = GameStatus.IN_PROGRESS_WHITE;
         }
+        return true;
     }
 
-    private void randomize() {
-        if (random.nextBoolean()) {
-            whiteSide = players[0];
-            blackSide = players[1];
-        } else {
-            blackSide = players[0];
-            whiteSide = players[1];
-        }
-    }
-
-    public UUID getWhiteSide() {
+    public Identifier getWhiteSide() {
         return whiteSide;
     }
 
-    public boolean move(UUID uuid, ChessPosition start, ChessPosition end) {
-        if (status == GameStatus.WAITING) {
-            return false;
-        }
+    public boolean move(Identifier userID, ChessPosition start, ChessPosition end) {
+//        if (status == GameStatus.WAITING) {
+//            System.out.println("Not in waiting state!");
+//            return false;
+//        }
 
         ChessPiece startPiece = board.getData().getPiece(start);
         if (startPiece == null) {
+            System.out.println("Start piece is null!");
             return false;
         }
         if (!startPiece.allowed(board.getData(), end)) {
+            System.out.println("Move is not allowed");
             return false;
         }
         if (startPiece.getColor() == Color.WHITE) {
-            if (!uuid.equals(whiteSide)) {
+            if (!userID.equals(whiteSide)) {
+                System.out.println(3);
                 return false;
             } else if (status != GameStatus.IN_PROGRESS_WHITE) {
+                System.out.println(4);
                 return false;
             } else {
                 status = GameStatus.IN_PROGRESS_BLACK;
             }
         } else {
-            if (!uuid.equals(blackSide)) {
+            if (!userID.equals(blackSide)) {
+                System.out.println(5);
                 return false;
             } else if (status != GameStatus.IN_PROGRESS_BLACK) {
+                System.out.println(6);
                 return false;
             } else {
                 status = GameStatus.IN_PROGRESS_WHITE;
             }
         }
 //        ChessMove move = new ChessMove(start, end, board.getPiece(start), board.getPiece(end));
+        System.out.println(7);
         return startPiece.move(board, end);
     }
 

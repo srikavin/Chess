@@ -1,6 +1,6 @@
 package me.infuzion.chess.util;
 
-import me.infuzion.chess.web.User;
+import me.infuzion.chess.web.game.User;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.mindrot.jbcrypt.BCrypt;
 
@@ -13,16 +13,17 @@ public class UserDatabase extends Database {
 
     public UserDatabase(String file) throws SQLException {
         connection = DriverManager.getConnection("jdbc:sqlite:" + file);
-        connection.createStatement().execute("PRAGMA foreign_keys = ON;");
-        Statement statement = connection.createStatement();
-        statement.executeUpdate("CREATE TABLE IF NOT EXISTS USERS"
-                + "(ID VARCHAR(12) PRIMARY KEY NOT NULL, "
-                + "USERNAME VARCHAR(36) UNIQUE, "
-                + "PASSWORD BINARY(60),"
-                + "BIO TEXT DEFAULT 'nothing to see here',"
-                + "RANK VARCHAR(64) DEFAULT 'USER',"
-                + "LAST_LOGIN INTEGER)");
-        statement.close();
+        try (Statement statement = connection.createStatement()) {
+            statement.execute("PRAGMA foreign_keys = ON;");
+            statement.executeUpdate("CREATE TABLE IF NOT EXISTS USERS"
+                    + "(ID VARCHAR(12) PRIMARY KEY NOT NULL, "
+                    + "USERNAME VARCHAR(36) UNIQUE, "
+                    + "PASSWORD BINARY(60),"
+                    + "BIO TEXT DEFAULT 'nothing to see here',"
+                    + "RANK VARCHAR(64) DEFAULT 'USER',"
+                    + "LAST_LOGIN INTEGER)");
+            statement.close();
+        }
         addUser(new Identifier(), "testing", "abc");
     }
 
@@ -51,11 +52,11 @@ public class UserDatabase extends Database {
         }
     }
 
-    private User getUserHTMLEscaped(Identifier id, String username, long epoch, String bio) {
+    private static User getUserHTMLEscaped(Identifier id, String username, long epoch, String bio) {
         return new User(id, StringEscapeUtils.escapeHtml4(username), epoch, bio);
     }
 
-    private long getCurrentEpoch() {
+    private static long getCurrentEpoch() {
         return Instant.now().atOffset(ZoneOffset.UTC).toInstant().toEpochMilli();
     }
 

@@ -13,10 +13,10 @@ public class ChessUtilities {
 
     static {
         GsonBuilder builder = new GsonBuilder();
-        gson = builder.create();
+        gson = builder.enableComplexMapKeySerialization().create();
+
         parser = new JsonParser();
         builder = new GsonBuilder();
         gsonWithStatic = builder.excludeFieldsWithModifiers(Modifier.TRANSIENT).create();
-
     }
 }

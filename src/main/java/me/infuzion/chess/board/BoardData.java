@@ -1,4 +1,6 @@
-package me.infuzion.chess;
+package me.infuzion.chess.board;
+
+import me.infuzion.chess.piece.ChessPiece;
 
 import java.util.Arrays;
 
