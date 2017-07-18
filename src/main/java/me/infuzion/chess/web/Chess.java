@@ -2,22 +2,22 @@ package me.infuzion.chess.web;
 
 import com.google.gson.Gson;
 import me.infuzion.chess.util.ChessUtilities;
-import me.infuzion.chess.util.MatchDatabase;
-import me.infuzion.chess.util.UserDatabase;
+import me.infuzion.chess.web.event.AuthenticatedPageRequestEvent;
 import me.infuzion.chess.web.event.AuthenticatedWebSocketEvent;
+import me.infuzion.chess.web.event.ChessGameInfoEvent;
 import me.infuzion.chess.web.event.ChessWebEvent;
 import me.infuzion.chess.web.game.Game;
-import me.infuzion.chess.web.listener.ChessAuthentication;
-import me.infuzion.chess.web.listener.ChessGameCreateListener;
-import me.infuzion.chess.web.listener.ChessMoveListener;
-import me.infuzion.chess.web.listener.ChessWebSocketHelper;
+import me.infuzion.chess.web.listener.*;
+import me.infuzion.chess.web.record.source.MatchDatabase;
+import me.infuzion.chess.web.record.source.UserDatabase;
 import me.infuzion.web.server.EventListener;
 import me.infuzion.web.server.Server;
 import me.infuzion.web.server.event.EventManager;
 import me.infuzion.web.server.event.def.PageRequestEvent;
 import me.infuzion.web.server.event.reflect.EventHandler;
 
-import java.sql.SQLException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -34,9 +34,12 @@ public class Chess implements EventListener {
     public Chess(Server server) {
         this.manager = server.getEventManager();
         try {
+            if (Files.notExists(Paths.get("chess.db"))) {
+                Files.createFile(Paths.get("chess.db"));
+            }
             userDatabase = new UserDatabase("chess.db");
             matchDatabase = new MatchDatabase("chess.db");
-        } catch (SQLException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             System.exit(-1);
             throw new RuntimeException(e);
@@ -44,13 +47,17 @@ public class Chess implements EventListener {
 
         manager.registerEvent(ChessWebEvent.class);
         manager.registerEvent(AuthenticatedWebSocketEvent.class);
+        manager.registerEvent(AuthenticatedPageRequestEvent.class);
+        manager.registerEvent(ChessGameInfoEvent.class);
         TokenHandler handler = new TokenHandler();
         manager.registerListener(this);
-        manager.registerListener(new ChessWebSocketHelper(handler, manager));
-
+        manager.registerListener(new ChessAuthenticationHelper(handler, manager));
+        manager.registerListener(new ChessGamePreviewListener(matchDatabase));
         manager.registerListener(new ChessAuthentication(userDatabase, handler));
-        manager.registerListener(new ChessMoveListener(matchDatabase, handler));
-        manager.registerListener(new ChessGameCreateListener(matchDatabase, handler));
+        manager.registerListener(new ChessMoveListener(matchDatabase));
+        manager.registerListener(new ChessGameCreateListener(matchDatabase));
+        manager.registerListener(new ChessUserListener(userDatabase));
+        manager.registerListener(new ChessGameInfoListener(matchDatabase, userDatabase));
         server.init();
     }
 

@@ -3,6 +3,7 @@ package me.infuzion.chess.web.event;
 import me.infuzion.chess.web.game.Game;
 import me.infuzion.web.server.event.Event;
 import me.infuzion.web.server.event.def.PageRequestEvent;
+import me.infuzion.web.server.router.Router;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,5 +31,10 @@ public class ChessWebEvent extends Event {
 
     public PageRequestEvent getEvent() {
         return event;
+    }
+
+    @Override
+    public Router getRouter() {
+        return event.getRouter();
     }
 }

@@ -1,6 +1,6 @@
 package me.infuzion.chess.util;
 
-public class Database {
+public abstract class Database {
     static {
         try {
             Class.forName("org.sqlite.JDBC");

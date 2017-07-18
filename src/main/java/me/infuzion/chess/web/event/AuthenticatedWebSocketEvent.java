@@ -6,6 +6,7 @@ import me.infuzion.chess.util.Identifier;
 import me.infuzion.chess.web.game.User;
 import me.infuzion.web.server.event.Event;
 import me.infuzion.web.server.event.def.WebSocketMessageEvent;
+import me.infuzion.web.server.router.Router;
 
 public class AuthenticatedWebSocketEvent extends Event {
     private final WebSocketMessageEvent event;
@@ -41,5 +42,10 @@ public class AuthenticatedWebSocketEvent extends Event {
 
     public String getRequest() {
         return request;
+    }
+
+    @Override
+    public Router getRouter() {
+        return event.getRouter();
     }
 }

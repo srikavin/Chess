@@ -1,73 +1,26 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Chess</title>
-    <script
-            src="https://code.jquery.com/jquery-3.1.1.min.js"
-            integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
-            crossorigin="anonymous"></script>
-    <!-- Latest compiled and minified CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
-          integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-    <link rel="stylesheet" href="css/index.css"/>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Chess</title>
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <!-- Latest compiled and minified JavaScript -->
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
-            integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
-            crossorigin="anonymous"></script>
-    <script src="/script/vendor/bootstrap-notify.min.js"></script>
-    <script src="script/index.js"></script>
+  
+<meta name="chess/config/environment" content="%7B%22modulePrefix%22%3A%22chess%22%2C%22environment%22%3A%22production%22%2C%22rootURL%22%3A%22/%22%2C%22locationType%22%3A%22auto%22%2C%22EmberENV%22%3A%7B%22FEATURES%22%3A%7B%7D%2C%22EXTEND_PROTOTYPES%22%3A%7B%22Date%22%3Afalse%7D%7D%2C%22APP%22%3A%7B%22HOST%22%3A%22http%3A//0.tcp.ngrok.io%3A13342%22%2C%22name%22%3A%22chess%22%2C%22version%22%3A%220.0.0+a541f294%22%7D%2C%22exportApplicationGlobal%22%3Afalse%2C%22ember-cli-mirage%22%3A%7B%22enabled%22%3Atrue%7D%7D" />
+
+  <link rel="stylesheet" href="/assets/vendor-5a430e4b1a91b10c167e86aa7a9d8c83.css" integrity="sha256-AwV7RZWwRAMRMuqZv5/KVE39romfAlLvwra8NiP4M1c= sha512-8CCUlARH1Hxp/HdvXs7IFs1nTiQlBJvrwH5O6Q9qBqxeAnZ/EcM+S20+zi7f5yNCJHTtZRMLJKcj/T67s7c9Dg==" >
+  <link rel="stylesheet" href="/assets/chess-d141b774ffbaf8b5fd011e4d06c15dea.css" integrity="sha256-PzrIrqNK2Mbd0oWH10K0+eECHSs6xF6R5jHW+zfQzYk= sha512-MyD9/FcA/S766xFsw1vu1aOZrLE0UhAdcI+wSh8+pjF4w/6svjJAtFMlS8nl5s1rf8xyiJPXbXahQ8hgjtuSGQ==" >
+
+  
 </head>
 <body>
-<nav class="navbar navbar-default">
-    <div class="container-fluid">
-        <div class="navbar-header">
-            <a class="navbar-brand" href="#">Chess</a>
-        </div>
-    </div>
-</nav>
 
-<div id="content" class="container-fluid">
-    <!--<div class="page-header">-->
-    <!--<h1>Join a Game</h1>-->
-    <!--</div>-->
 
-    <div class="row">
-        <div class="col-md-10">
-            <table class="table table-hover">
-                <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Mode</th>
-                    <th>Status</th>
-                    <th>Join</th>
-                </tr>
-                </thead>
-                <tbody id="game-holder">
-                <tr id="game-entry-format">
-                    <td>{id}</td>
-                    <td>{mode}</td>
-                    <td>{status}</td>
-                    <td>
-                        <button type="button" class="btn btn-default" data-game="{id}">Join Game</button>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
-        <div class="col-md-2">
-            <div class="btn-block">
-                <div data-toggle="tooltip" data-placement="top" title="You are in a game!" id="newGameDiv">
-                    <button type="button" class="btn btn-default btn-block" id="newGame">New Game</button>
-                </div>
-            </div>
-            <button type="button" class="btn btn-info btn-block" id="refresh">Refresh</button>
-        </div>
-    </div>
-</div>
-<div id="loading-screen">
-    <div class="loader"></div>
-</div>
+<script src="/assets/vendor-c51eced6879fb5659254fd4708b5a5fd.js" integrity="sha256-rTYZJXTfUSF7NzyJKCre24U8r9ycPAG1X03BueNMPSg= sha512-KE9UpctMNUqv9JFDyx1Ac0pI03gQ2hRpBh2rsz4nT7MA+it13+wWkyYF3zptXVsFYdLn7cT2rbyW0zYa7YaaIA==" ></script>
+<script src="/assets/chess-87507d08359c3b99a64811f7cbadbae1.js" integrity="sha256-cLo+rK3/6HxDiWNZNlL9FBwCcoLID4GxVjBFbpIKgEo= sha512-E4zkFkZyuxApROZscGcthYCubx8K7byu10ouSGNtIzAgc+f3dmxXWMNsB+OufvXIKmmFKGUd3vXp+jMAwKjPFA==" ></script>
+
+<div id="ember-bootstrap-wormhole"></div>
 </body>
 </html>

@@ -1,21 +1,68 @@
 package me.infuzion.chess.web.game;
 
+import com.google.gson.JsonObject;
+import me.infuzion.chess.board.BoardData;
 import me.infuzion.chess.board.ChessBoard;
 import me.infuzion.chess.board.ChessPosition;
 import me.infuzion.chess.piece.ChessPiece;
 import me.infuzion.chess.piece.Color;
+import me.infuzion.chess.piece.PieceType;
 import me.infuzion.chess.util.Identifier;
+import me.infuzion.chess.web.record.Record;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
-import java.util.UUID;
 
-public class Game {
+public class Game implements Record {
 
     private static final Map<Identifier, Game> idGameMap = new HashMap<>();
     private static final Random random = new Random();
-    public final UUID uuid = UUID.randomUUID();
+    private static final Map<String, BufferedImage> pieceToImageMap = new HashMap<>();
+    private static final BufferedImage defaultBoard = new BufferedImage(640, 640, BufferedImage.TYPE_INT_ARGB);
+    private static final int tileSize = 80;
+    private static final Map<Identifier, byte[]> generatedThumbnails = new HashMap<>();
+    private static final Map<Identifier, Boolean> thumbnailsDirty = new HashMap<>();
+
+    static {
+        try {
+            String color = "w";
+            for (int i = 0; i < 2; i++) {
+                for (PieceType e : PieceType.values()) {
+                    String name = color + e.getAbbreviation();
+                    BufferedImage image = ImageIO.read(Game.class.getClassLoader().getResourceAsStream("images/pieces/" + name + ".png"));
+                    pieceToImageMap.put(name, image);
+                }
+                color = "b";
+            }
+
+            ChessBoard board = ChessBoard.getDefaultBoard();
+            final java.awt.Color white = new java.awt.Color(240, 217, 181);
+            final java.awt.Color black = new java.awt.Color(181, 136, 99);
+            Graphics graphics = defaultBoard.getGraphics();
+
+
+            Color[][] boardColor = board.getBoardColors();
+            for (int i = 0; i < 8; i++) {
+                for (int j = 0; j < 8; j++) {
+                    graphics.setColor(boardColor[i][j] == Color.WHITE ? white : black);
+                    graphics.fillRect(i * tileSize, j * tileSize, (i + 1) * tileSize, (j + 1) * tileSize);
+                }
+            }
+        } catch (IOException e1) {
+            e1.printStackTrace();
+            System.exit(-1);
+        }
+
+    }
 
     private final Identifier gameID;
     private final ChessBoard board;
@@ -52,6 +99,20 @@ public class Game {
 
     public static Game fromID(Identifier id) {
         return idGameMap.get(id);
+    }
+
+    public static void main(String[] args) throws IOException {
+        Game game = new Game(new Identifier(),
+                "1. d3 e5 2. e3 Nc6 3. f3 Bc5 4. g3 Nge7 5. h3 d6 6. f4 Be6 7. fxe5 Bd5 8. exd6 Qxd6", new Identifier(),
+                new Identifier(), GameStatus.IN_PROGRESS_WHITE);
+        byte[] image = game.generateThumbnail();
+        File file = new File("img.png");
+        file.createNewFile();
+        IOUtils.write(image, new FileOutputStream(file));
+    }
+
+    public void onChange() {
+        thumbnailsDirty.put(this.gameID, true);
     }
 
     public ChessBoard getBoard() {
@@ -136,7 +197,11 @@ public class Game {
         }
 //        ChessMove move = new ChessMove(start, end, board.getPiece(start), board.getPiece(end));
         System.out.println(7);
-        return startPiece.move(board, end);
+        if (startPiece.move(board, end)) {
+            onChange();
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -152,5 +217,60 @@ public class Game {
 
     public Visibility getVisibility() {
         return visibility;
+    }
+
+    public byte[] generateThumbnail() {
+        if (thumbnailsDirty.getOrDefault(this.gameID, true)) {
+            BufferedImage image = new BufferedImage(640, 640, BufferedImage.TYPE_INT_ARGB);
+            Graphics graphics = image.getGraphics();
+            graphics.drawImage(defaultBoard, 0, 0, null);
+            BoardData data = board.getData();
+            ChessPiece[][] pieces = data.getPieces();
+
+            for (int i = 0; i < 8; i++) {
+                for (int j = 0; j < 8; j++) {
+                    ChessPiece current = pieces[i][j];
+                    if (current == null) {
+                        continue;
+                    }
+                    String name = current.getColor() == Color.WHITE ? "w" : "b";
+                    name += current.getType().getAbbreviation();
+                    BufferedImage pieceImage = pieceToImageMap.get(name);
+                    graphics.drawImage(pieceImage, i * tileSize, j * tileSize, null);
+                }
+            }
+
+            byte[] img;
+            try (ByteArrayOutputStream baos = new ByteArrayOutputStream(10000)) {
+                ImageIO.write(image, "png", baos);
+                img = baos.toByteArray();
+
+            } catch (IOException e) {
+                e.printStackTrace();
+                return new byte[1];
+            }
+
+            generatedThumbnails.put(this.gameID, img);
+            thumbnailsDirty.put(this.gameID, false);
+
+            return img;
+        } else {
+            return generatedThumbnails.get(this.gameID);
+        }
+    }
+
+    @Override
+    public String getName() {
+        return "game";
+    }
+
+    @Override
+    public JsonObject toJson() {
+        JsonObject toRet = new JsonObject();
+        toRet.addProperty("id", getGameID().getId());
+        toRet.addProperty("playerBlack", (getBlackSide() != null) ? getBlackSide().getId() : null);
+        toRet.addProperty("playerWhite", (getWhiteSide() != null) ? getWhiteSide().getId() : null);
+        toRet.addProperty("status", getStatus().name());
+        return toRet;
     }
 }

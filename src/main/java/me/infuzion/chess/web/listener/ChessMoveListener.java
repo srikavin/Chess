@@ -5,12 +5,11 @@ import com.google.gson.JsonObject;
 import me.infuzion.chess.board.ChessPosition;
 import me.infuzion.chess.util.ChessUtilities;
 import me.infuzion.chess.util.Identifier;
-import me.infuzion.chess.util.MatchDatabase;
-import me.infuzion.chess.web.TokenHandler;
 import me.infuzion.chess.web.event.AuthenticatedWebSocketEvent;
 import me.infuzion.chess.web.event.EndPointURL;
 import me.infuzion.chess.web.game.Game;
 import me.infuzion.chess.web.game.User;
+import me.infuzion.chess.web.record.source.MatchDatabase;
 import me.infuzion.web.server.EventListener;
 import me.infuzion.web.server.event.def.WebSocketMessageEvent;
 import me.infuzion.web.server.event.reflect.EventHandler;
@@ -21,11 +20,9 @@ public class ChessMoveListener implements EventListener {
 
     private static final Gson gson = ChessUtilities.gson;
     private final MatchDatabase matchDatabase;
-    private final TokenHandler tokenHandler;
 
-    public ChessMoveListener(MatchDatabase database, TokenHandler tokenHandler) {
+    public ChessMoveListener(MatchDatabase database) {
         this.matchDatabase = database;
-        this.tokenHandler = tokenHandler;
     }
 
     @EventHandler(priority = EventPriority.END)
@@ -68,6 +65,9 @@ public class ChessMoveListener implements EventListener {
 
     @EventHandler
     private void onSubmitRequest(AuthenticatedWebSocketEvent event) {
+        if (!event.getParsed().get("request").getAsString().equals("submit")) {
+            return;
+        }
         JsonObject response = new JsonObject();
         String source = event.getParsed().get("source").getAsString();
         String end = event.getParsed().get("end").getAsString();
@@ -86,16 +86,41 @@ public class ChessMoveListener implements EventListener {
         ChessPosition startPos = new ChessPosition(source);
         ChessPosition endPos = new ChessPosition(end);
 
-        JsonObject gameObj = new JsonObject();
-        gameObj.addProperty("game", game.getBoard().toFen());
         if (!game.move(event.getUserIdentifier(), startPos, endPos)) {
             response.addProperty("move", "invalid");
         }
         event.getEvent().addMessage(gson.toJson(response));
-        event.getEvent().addSendToAll(gson.toJson(gameObj));
-        event.getEvent().addMessage(gson.toJson(game));
+        event.getEvent().addSendToAll(gson.toJson(generateResponse(game)));
         matchDatabase.updateMatch(game);
         return;
+    }
+
+    private JsonObject generateResponse(Game game) {
+
+        JsonObject response = new JsonObject();
+        response.addProperty("game", game.getBoard().toFen());
+
+        Identifier white = game.getWhiteSide();
+        JsonObject whiteSide = new JsonObject();
+        whiteSide.addProperty("present", white != null);
+        if (white != null) {
+            whiteSide.addProperty("id", white.getId());
+        }
+
+        JsonObject blackSide = new JsonObject();
+        Identifier black = game.getBlackSide();
+
+        blackSide.addProperty("present", black != null);
+        if (black != null) {
+            blackSide.addProperty("id", black.getId());
+        }
+
+        JsonObject players = new JsonObject();
+        players.add("white", whiteSide);
+        players.add("black", blackSide);
+
+        response.add("players", players);
+        return response;
     }
 
     @EventHandler
@@ -125,8 +150,7 @@ public class ChessMoveListener implements EventListener {
 
         String request = object.get("request").getAsString();
         if (request.equals("update")) {
-            response.addProperty("game", game.getBoard().toFen());
-            event.addMessage(gson.toJson(response));
+            event.addSendToAll(gson.toJson(generateResponse(game)));
             return;
         }
     }

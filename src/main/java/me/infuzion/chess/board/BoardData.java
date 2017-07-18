@@ -17,7 +17,8 @@ public class BoardData {
     }
 
     public ChessPiece[][] getPieces() {
-        return Arrays.stream(pieces).map(ChessPiece[]::clone).toArray(ChessPiece[][]::new);
+        return Arrays.copyOf(pieces, pieces.length);
+//        return Arrays.stream(pieces).map(ChessPiece[]::clone).toArray(ChessPiece[][]::new);
     }
 
     public void setPiece(int x, int y, ChessPiece piece) {

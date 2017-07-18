@@ -1,6 +1,5 @@
 package me.infuzion.chess.board;
 
-import com.sun.istack.internal.Nullable;
 import me.infuzion.chess.piece.*;
 import me.infuzion.chess.util.PGNParser;
 
@@ -122,8 +121,7 @@ public class ChessBoard {
         return king != null && piecesThatCanMoveTo(king.currentPosition(), new BoardData(pieces), getOppositeColor(side)).size() > 0;
     }
 
-    public static List<ChessPiece> piecesThatCanMoveTo(ChessPosition position, BoardData data,
-                                                       @Nullable Color color) {
+    public static List<ChessPiece> piecesThatCanMoveTo(ChessPosition position, BoardData data, Color color) {
         boolean skipColor = color == null;
         List<ChessPiece> piecesToRet = new ArrayList<>();
         for (ChessPiece[] pieceArr : data.getPieces()) {

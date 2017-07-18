@@ -13,7 +13,7 @@ public class ChessUtilities {
 
     static {
         GsonBuilder builder = new GsonBuilder();
-        gson = builder.enableComplexMapKeySerialization().create();
+        gson = builder.enableComplexMapKeySerialization().setPrettyPrinting().serializeNulls().create();
 
         parser = new JsonParser();
         builder = new GsonBuilder();
