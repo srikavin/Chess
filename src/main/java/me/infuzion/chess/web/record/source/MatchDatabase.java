@@ -14,7 +14,6 @@ import java.util.List;
 public class MatchDatabase extends Database implements RecordSource<Game> {
     private Connection connection;
 
-    @SuppressWarnings("SqlNoDataSourceInspection")
     public MatchDatabase(String file) throws SQLException {
         SQLiteDataSource source = new SQLiteDataSource();
         source.setUrl("jdbc:sqlite:" + file);

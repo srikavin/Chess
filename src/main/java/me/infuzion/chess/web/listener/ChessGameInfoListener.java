@@ -77,9 +77,6 @@ public class ChessGameInfoListener implements ChessWebListener {
         root.add("games", array);
         root.add("users", users);
 
-//        root2.add("new", new RecordSet<>("games", database).toJson(10));
-//        root2.add("old", root);
-//        return root2;
         return new RecordSet<>("games", database).toJson(10);
     }
 

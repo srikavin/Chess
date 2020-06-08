@@ -78,27 +78,26 @@ class ChessPositionTest {
         }
     }
 
-    @SuppressWarnings("EqualsWithItself")
     @Test
     void equals() {
         ChessPosition position = new ChessPosition("a8");
         ChessPosition position1 = new ChessPosition(0, 0);
         ChessPosition position2 = new ChessPosition(0, 1);
 
-        assertTrue(position.equals(position1), "Equals equivalent position object");
-        assertTrue(position1.equals(position), "Equals equivalent position object");
+        assertEquals(position1, position, "Equals equivalent position object");
+        assertEquals(position, position1, "Equals equivalent position object");
 
-        assertTrue(position.equals(position), "Equals itself");
-        assertTrue(position1.equals(position1), "Equals itself");
-        assertTrue(position2.equals(position2), "Equals itself");
+        assertEquals(position, position, "Equals itself");
+        assertEquals(position1, position1, "Equals itself");
+        assertEquals(position2, position2, "Equals itself");
 
-        assertFalse(position.equals(new Object()), "Should not be equal to `new Object()`");
+        assertNotEquals(new Object(), position, "Should not be equal to `new Object()`");
 
-        assertFalse(position.equals(position2));
-        assertFalse(position1.equals(position2));
+        assertNotEquals(position2, position);
+        assertNotEquals(position2, position1);
 
-        assertFalse(position2.equals(position1));
-        assertFalse(position2.equals(position));
+        assertNotEquals(position1, position2);
+        assertNotEquals(position, position2);
     }
 
     @Test

@@ -80,7 +80,7 @@ public class ChessUserListener implements EventListener {
                 System.out.println(pathToImage.toString());
                 byte[] image;
 
-                if (pathToImage.toString().equals("/images/unknown.png")) {
+                if (pathToImage.equals(Path.of("/images/unknown.png"))) {
                     image = drawErrorString(user.getUsername());
 
                 } else {
@@ -124,7 +124,7 @@ public class ChessUserListener implements EventListener {
                 object.addProperty("success", true);
             } catch (IOException e) {
                 e.printStackTrace();
-                object.addProperty("error", "invaid image");
+                object.addProperty("error", "invalid image");
             }
             event.getEvent().setResponseData(ChessUtilities.gson.toJson(object));
         }

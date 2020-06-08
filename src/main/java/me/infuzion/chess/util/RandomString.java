@@ -1,6 +1,6 @@
 package me.infuzion.chess.util;
 
-import java.util.Random;
+import java.security.SecureRandom;
 
 public class RandomString {
 
@@ -17,7 +17,7 @@ public class RandomString {
         symbols = tmp.toString().toCharArray();
     }
 
-    private final Random random = new Random();
+    private final SecureRandom random = new SecureRandom();
 
     private final char[] buf;
 
