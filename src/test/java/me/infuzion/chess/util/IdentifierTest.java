@@ -26,14 +26,14 @@ class IdentifierTest {
 
     @Test
     void equals() {
-        assertTrue(new Identifier("abc").equals(new Identifier("abc")));
-        assertTrue(new Identifier("abc123123123").equals(new Identifier("abc123123123")));
-        assertTrue(new Identifier("123!@#").equals(new Identifier("123!@#")));
+        assertEquals(new Identifier("abc"), new Identifier("abc"));
+        assertEquals(new Identifier("abc123123123"), new Identifier("abc123123123"));
+        assertEquals(new Identifier("123!@#"), new Identifier("123!@#"));
 
-        assertFalse(new Identifier("abc").equals(new Object()));
-        assertFalse(new Identifier("abc").equals(new Identifier("123")));
-        assertFalse(new Identifier("abc").equals(new Identifier("")));
-        assertFalse(new Identifier("abc").equals(new Identifier("ab c")));
+        assertNotEquals(new Object(), new Identifier("abc"));
+        assertNotEquals(new Identifier("123"), new Identifier("abc"));
+        assertNotEquals(new Identifier(""), new Identifier("abc"));
+        assertNotEquals(new Identifier("ab c"), new Identifier("abc"));
     }
 
     @Test
@@ -42,7 +42,6 @@ class IdentifierTest {
         assertEquals(new Identifier("abc123123123").hashCode(), "abc123123123".hashCode());
         assertEquals(new Identifier("123!@#").hashCode(), "123!@#".hashCode());
 
-        assertNotEquals(new Identifier("abc").hashCode(), null);
         assertNotEquals(new Identifier("abc").hashCode(), "123".hashCode());
         assertNotEquals(new Identifier("abc").hashCode(), "".hashCode());
         assertNotEquals(new Identifier("abc").hashCode(), "ab c".hashCode());
