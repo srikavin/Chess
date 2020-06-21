@@ -14,7 +14,13 @@ public class Main {
                 .getFile();
         System.setProperty("java.util.logging.config.file", path);
 
-        Server server = new Server(new InetSocketAddress("0.0.0.0", 37629));
+        int port = 37629;
+
+        if (args.length == 1) {
+            port = Integer.parseInt(args[0]);
+        }
+
+        Server server = new Server(new InetSocketAddress("0.0.0.0", port));
         new Chess(server);
     }
 }
