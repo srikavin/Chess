@@ -1,11 +1,10 @@
 package me.infuzion.chess.web.event;
 
 import me.infuzion.chess.util.Identifier;
-import me.infuzion.web.server.event.Event;
+import me.infuzion.web.server.event.AbstractEvent;
 import me.infuzion.web.server.event.def.PageRequestEvent;
-import me.infuzion.web.server.router.Router;
 
-public class ChessGameInfoEvent extends Event {
+public class ChessGameInfoEvent extends AbstractEvent {
     private final PageRequestEvent event;
     private final String fullRequest;
     private final String request;
@@ -14,7 +13,7 @@ public class ChessGameInfoEvent extends Event {
 
     public ChessGameInfoEvent(PageRequestEvent event, String basePath) {
         this.event = event;
-        fullRequest = event.getPage().substring(basePath.length());
+        fullRequest = event.getPath().substring(basePath.length());
         String[] split = fullRequest.split("/", 3);
         if (split.length < 2) {
             throw new RuntimeException("Size is invalid");
@@ -46,10 +45,5 @@ public class ChessGameInfoEvent extends Event {
 
     public String getRequest() {
         return request;
-    }
-
-    @Override
-    public Router getRouter() {
-        return event.getRouter();
     }
 }

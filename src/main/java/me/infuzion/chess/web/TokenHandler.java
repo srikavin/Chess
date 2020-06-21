@@ -2,6 +2,8 @@ package me.infuzion.chess.web;
 
 import me.infuzion.chess.util.Identifier;
 import me.infuzion.chess.web.game.User;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,11 +30,11 @@ public class TokenHandler {
         return identifier;
     }
 
-    public User getUser(Identifier identifier) {
+    public @Nullable User getUser(@NotNull Identifier identifier) {
         return identifierUserMap.get(identifier);
     }
 
-    public Identifier getIdentifier(User user) {
+    public @NotNull Identifier getIdentifier(@NotNull User user) {
         return userIdentifierMap.get(user);
     }
 }

@@ -2,35 +2,40 @@ package me.infuzion.chess.web.listener;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import me.infuzion.chess.util.ChessUtilities;
 import me.infuzion.chess.util.Identifier;
-import me.infuzion.chess.web.event.ChessWebListener;
 import me.infuzion.chess.web.game.Game;
 import me.infuzion.chess.web.game.User;
 import me.infuzion.chess.web.record.RecordSet;
 import me.infuzion.chess.web.record.source.MatchDatabase;
 import me.infuzion.chess.web.record.source.UserDatabase;
+import me.infuzion.web.server.EventListener;
 import me.infuzion.web.server.event.def.PageRequestEvent;
 import me.infuzion.web.server.event.reflect.EventHandler;
-import me.infuzion.web.server.event.reflect.EventPriority;
 import me.infuzion.web.server.event.reflect.Route;
+import me.infuzion.web.server.event.reflect.param.mapper.impl.Response;
+import me.infuzion.web.server.event.reflect.param.mapper.impl.UrlParam;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
-public class ChessGameInfoListener implements ChessWebListener {
+public class ChessGameInfoListener implements EventListener {
     private final MatchDatabase database;
     private final UserDatabase userDatabase;
+    private final RecordSet<Game> recordSet;
 
     public ChessGameInfoListener(MatchDatabase matchDatabase, UserDatabase userDatabase) {
         this.database = matchDatabase;
         this.userDatabase = userDatabase;
+        recordSet = new RecordSet<>("games", database);
     }
 
     @EventHandler
-    @Route(path = "/api/v1/games")
-    public void onRequest(PageRequestEvent event, Map<String, String> map) {
-        List<Game> games = database.getMatches(10);
-        setResponseJson(event, ChessUtilities.gson.toJson(generateInfo(games)));
+    @Route("/api/v1/games/")
+    @Response("application/json")
+    public JsonObject onRequest(PageRequestEvent event) {
+        return generateInfo(recordSet.get(10));
     }
 
     private JsonObject generateInfo(List<Game> games) {
@@ -73,23 +78,23 @@ public class ChessGameInfoListener implements ChessWebListener {
             game.addProperty("status", e.getStatus().name());
             array.add(game);
         }
-        JsonObject root2 = new JsonObject();
         root.add("games", array);
         root.add("users", users);
 
-        return new RecordSet<>("games", database).toJson(10);
+        return root;
     }
 
-    @EventHandler(priority = EventPriority.END)
-    @Route(path = "/api/v1/games/:game_id/")
-    private void singleGame(PageRequestEvent event, Map<String, String> dynSegs) {
-        Game game = database.getMatch(new Identifier(dynSegs.get("game_id")));
+    @EventHandler
+    @Route("/api/v1/games/:game_id/")
+    @Response("application/json")
+    private JsonObject singleGame(PageRequestEvent event, @UrlParam("game_id") String game_id) {
+        Game game = recordSet.get(new Identifier(game_id));
         if (game == null) {
             JsonObject object = new JsonObject();
             object.addProperty("error", "invalid game id");
-            setResponseJson(event, object);
+            return object;
         } else {
-            setResponseJson(event, ChessUtilities.gson.toJson(generateInfo(Collections.singletonList(game))));
+            return generateInfo(Collections.singletonList(game));
         }
     }
 }

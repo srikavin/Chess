@@ -12,19 +12,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MatchDatabase extends Database implements RecordSource<Game> {
-    private Connection connection;
+    private final Connection connection;
 
-    public MatchDatabase(String file) throws SQLException {
-        SQLiteDataSource source = new SQLiteDataSource();
-        source.setUrl("jdbc:sqlite:" + file);
-        connection = source.getConnection();
+    public MatchDatabase(Connection url) throws SQLException {
+        connection = url;
         try (Statement statement = connection.createStatement()) {
-            statement.execute("PRAGMA foreign_keys = ON;");
             statement.executeUpdate(
                     "CREATE TABLE IF NOT EXISTS MATCH_STATUS" +
-                            "(ID        INTEGER       PRIMARY KEY AUTOINCREMENT NOT NULL," +
+                            "(ID        SERIAL       PRIMARY KEY  NOT NULL," +
                             "NAME       VARCHAR(32)   UNIQUE)");
-            try (PreparedStatement insert = connection.prepareStatement("INSERT OR IGNORE INTO MATCH_STATUS (NAME) VALUES (?)")) {
+            try (PreparedStatement insert = connection.prepareStatement("INSERT INTO MATCH_STATUS (NAME) VALUES (?) ON CONFLICT DO NOTHING")) {
                 for (GameStatus e : GameStatus.values) {
                     insert.setString(1, e.name());
                     insert.addBatch();
@@ -33,7 +30,7 @@ public class MatchDatabase extends Database implements RecordSource<Game> {
             }
             statement.executeUpdate(
                     "CREATE TABLE IF NOT EXISTS MATCHES"
-                            + "(ID              VARCHAR(12)  PRIMARY KEY NOT NULL, "
+                            + "(ID              VARCHAR(16)  PRIMARY KEY NOT NULL, "
                             + "PLAYER_WHITE     VARCHAR(36),"
                             + "PLAYER_BLACK     VARCHAR(36),"
                             + "STATUS           INTEGER,"
@@ -41,7 +38,6 @@ public class MatchDatabase extends Database implements RecordSource<Game> {
                             + "FOREIGN KEY (STATUS)          REFERENCES MATCH_STATUS(ID),"
                             + "FOREIGN KEY (PLAYER_WHITE)    REFERENCES USERS(ID),"
                             + "FOREIGN KEY (PLAYER_BLACK)    REFERENCES USERS(ID))");
-            statement.close();
         }
     }
 
@@ -78,11 +74,10 @@ public class MatchDatabase extends Database implements RecordSource<Game> {
     }
 
     public Game getMatch(Identifier id) {
-        String sql =
-                "SELECT M.ID, M.PLAYER_WHITE, M.PLAYER_BLACK, MS.NAME AS STATUS_NAME, M.BOARD " +
-                        "FROM MATCHES AS M, MATCH_STATUS AS MS JOIN MATCH_STATUS AS STATUS_NAME " +
-                        "ON M.STATUS = MS.ID " +
-                        "WHERE M.ID = ?";
+        String sql = "SELECT M.ID, PLAYER_WHITE, PLAYER_BLACK, MS.NAME AS STATUS_NAME, BOARD FROM MATCHES M " +
+                "JOIN MATCH_STATUS MS " +
+                "ON M.STATUS = MS.ID " +
+                "WHERE M.id = ?";
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, id.getId());
             try (ResultSet set = statement.executeQuery()) {
@@ -109,7 +104,6 @@ public class MatchDatabase extends Database implements RecordSource<Game> {
             System.out.println(game.getBoard().toPGNString());
             updateStatement.setString(6, game.getGameID().toString());
             updateStatement.execute();
-            updateStatement.close();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -131,8 +125,6 @@ public class MatchDatabase extends Database implements RecordSource<Game> {
             insertStatement.setString(4, game.getStatus().name());
             insertStatement.setString(5, game.getBoard().toPGNString());
             insertStatement.execute();
-            insertStatement.close();
-
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.*;
 class IdentifierTest {
     @Test
     void constructor() {
-        assertThrows(IllegalArgumentException.class, () -> new Identifier(null));
         new Identifier("abc");
         new Identifier();
     }

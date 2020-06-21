@@ -1,18 +1,19 @@
 package me.infuzion.chess.web.listener;
 
 import me.infuzion.chess.util.Identifier;
-import me.infuzion.chess.web.event.ChessWebListener;
 import me.infuzion.chess.web.game.Game;
 import me.infuzion.chess.web.record.source.MatchDatabase;
+import me.infuzion.web.server.EventListener;
 import me.infuzion.web.server.event.def.PageRequestEvent;
 import me.infuzion.web.server.event.reflect.EventHandler;
 import me.infuzion.web.server.event.reflect.Route;
+import me.infuzion.web.server.event.reflect.param.mapper.impl.Response;
+import me.infuzion.web.server.event.reflect.param.mapper.impl.UrlParam;
 import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
-import java.util.Map;
 
-public class ChessGamePreviewListener implements ChessWebListener {
+public class ChessGamePreviewListener implements EventListener {
     private final MatchDatabase database;
 
     public ChessGamePreviewListener(MatchDatabase database) {
@@ -20,24 +21,19 @@ public class ChessGamePreviewListener implements ChessWebListener {
     }
 
     @EventHandler
-    @Route(path = "/api/v1/games/:game_id/preview")
-    public void onRequest(PageRequestEvent event, Map<String, String> map) {
-        Identifier id = new Identifier(map.get("game_id"));
+    @Route("/api/v1/games/:game_id/preview")
+    @Response(value = "image/png", raw = true)
+    public byte[] onRequest(PageRequestEvent event, @UrlParam("game_id") String game_id) {
+        Identifier id = new Identifier(game_id);
         Game game = database.getMatch(id);
         if (game != null) {
-            event.setResponseData(game.generateThumbnail());
-            event.setStatusCode(200);
+            return game.generateThumbnail();
         } else {
-            byte[] notFoundError;
             try {
-                notFoundError = IOUtils.toByteArray(getClass().getResourceAsStream("/images/error/match-not-found.png"));
+                return IOUtils.toByteArray(getClass().getResourceAsStream("/images/error/match-not-found.png"));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-
-            event.setResponseData(notFoundError);
-            event.setStatusCode(404);
         }
-        event.setContentType("image/png");
     }
 }

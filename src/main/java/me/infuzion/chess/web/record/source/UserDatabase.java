@@ -5,30 +5,25 @@ import me.infuzion.chess.util.Identifier;
 import me.infuzion.chess.web.game.User;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.mindrot.jbcrypt.BCrypt;
-import org.sqlite.SQLiteDataSource;
 
 import java.sql.*;
 import java.time.Instant;
 import java.time.ZoneOffset;
 
 public class UserDatabase extends Database {
-    private Connection connection;
+    private final Connection connection;
 
-    public UserDatabase(String file) throws SQLException {
-        SQLiteDataSource source = new SQLiteDataSource();
-        source.setUrl("jdbc:sqlite:" + file);
-        connection = source.getConnection();
+    public UserDatabase(Connection url) throws SQLException {
+        connection = url;
         try (Statement statement = connection.createStatement()) {
-            statement.execute("PRAGMA foreign_keys = ON;");
             statement.executeUpdate("CREATE TABLE IF NOT EXISTS USERS"
-                    + "(ID VARCHAR(12) PRIMARY KEY NOT NULL, "
-                    + "USERNAME VARCHAR(36) UNIQUE, "
-                    + "PASSWORD BINARY(60),"
+                    + "(ID varchar(16) PRIMARY KEY NOT NULL, "
+                    + "USERNAME varchar(36) UNIQUE, "
+                    + "PASSWORD varchar(60),"
                     + "BIO TEXT DEFAULT 'nothing to see here',"
-                    + "RANK VARCHAR(64) DEFAULT 'USER',"
+                    + "RANK varchar(64) DEFAULT 'USER',"
                     + "IMAGE_PATH TEXT DEFAULT '/images/unknown.png',"
-                    + "LAST_LOGIN INTEGER)");
-            statement.close();
+                    + "LAST_LOGIN bigint)");
         }
         addUser(new Identifier(), "testing", "abc");
     }
@@ -63,9 +58,10 @@ public class UserDatabase extends Database {
             statement.executeUpdate();
 
             try (ResultSet resultSet = statement.getResultSet()) {
-                return getUserHTMLEscaped(id, username, getCurrentEpoch(),
-                        resultSet.getString("BIO"),
-                        resultSet.getString("IMAGE_PATH"));
+                return null;
+//                return getUserHTMLEscaped(id, username, getCurrentEpoch(),
+//                        resultSet.getString("BIO"),
+//                        resultSet.getString("IMAGE_PATH"));
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -138,22 +134,18 @@ public class UserDatabase extends Database {
         try (PreparedStatement checkAvailability = connection.prepareStatement(
                 "SELECT * FROM USERS WHERE ID = ?")) {
             checkAvailability.setString(1, identifier.getId());
-            String id;
-            String username;
-            long lastLogin;
-            String bio;
-            String imagePath;
             try (ResultSet resultSet = checkAvailability.executeQuery()) {
                 if (!resultSet.next()) {
                     return null;
                 }
-                id = resultSet.getString("ID");
-                username = resultSet.getString("USERNAME");
-                lastLogin = resultSet.getLong("LAST_LOGIN");
-                bio = resultSet.getString("BIO");
-                imagePath = resultSet.getString("IMAGE_PATH");
+                String id = resultSet.getString("ID");
+                String username = resultSet.getString("USERNAME");
+                long lastLogin = resultSet.getLong("LAST_LOGIN");
+                String bio = resultSet.getString("BIO");
+                String imagePath = resultSet.getString("IMAGE_PATH");
+
+                return getUserHTMLEscaped(new Identifier(id), username, lastLogin, bio, imagePath);
             }
-            return getUserHTMLEscaped(new Identifier(id), username, lastLogin, bio, imagePath);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

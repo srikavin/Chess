@@ -4,6 +4,7 @@ import java.security.SecureRandom;
 
 public class RandomString {
 
+    private static final SecureRandom random = new SecureRandom();
     private static final char[] symbols;
 
     static {
@@ -14,10 +15,11 @@ public class RandomString {
         for (char ch = 'a'; ch <= 'z'; ++ch) {
             tmp.append(ch);
         }
+        for (char ch = 'A'; ch <= 'Z'; ++ch) {
+            tmp.append(ch);
+        }
         symbols = tmp.toString().toCharArray();
     }
-
-    private final SecureRandom random = new SecureRandom();
 
     private final char[] buf;
 
@@ -28,7 +30,7 @@ public class RandomString {
         buf = new char[length];
     }
 
-    public String nextString() {
+    public synchronized String nextString() {
         for (int idx = 0; idx < buf.length; ++idx) {
             buf[idx] = symbols[random.nextInt(symbols.length)];
         }

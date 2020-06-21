@@ -127,7 +127,7 @@ public class Game implements Record {
         return blackSide;
     }
 
-    public boolean addPlayer(Identifier player) {
+    public synchronized boolean addPlayer(Identifier player) {
         if (player.equals(whiteSide) || player.equals(blackSide)) {
             return false;
         }

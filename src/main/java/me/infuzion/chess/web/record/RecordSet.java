@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import me.infuzion.chess.util.Identifier;
 import me.infuzion.chess.web.record.filter.Filter;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -16,6 +17,7 @@ public class RecordSet<T extends Record> {
         this.recordSource = recordSource;
     }
 
+    @Nullable
     public T get(Identifier id) {
         return recordSource.getRecord(id);
     }

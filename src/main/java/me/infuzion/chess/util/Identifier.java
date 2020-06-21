@@ -1,15 +1,14 @@
 package me.infuzion.chess.util;
 
+import org.jetbrains.annotations.NotNull;
+
 public class Identifier {
 
     private final static RandomString generator = new RandomString(16);
 
     private final String id;
 
-    public Identifier(String id) {
-        if (id == null) {
-            throw new IllegalArgumentException("Null id!");
-        }
+    public Identifier(@NotNull String id) {
         this.id = id;
     }
 

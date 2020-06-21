@@ -1,18 +1,22 @@
 package me.infuzion.chess.web.listener;
 
 import com.google.gson.JsonObject;
-import me.infuzion.chess.util.ChessUtilities;
 import me.infuzion.chess.util.Identifier;
 import me.infuzion.chess.util.RandomString;
-import me.infuzion.chess.web.event.AuthenticatedPageRequestEvent;
 import me.infuzion.chess.web.event.EndPointURL;
+import me.infuzion.chess.web.event.helper.RequestUser;
+import me.infuzion.chess.web.event.helper.RequiresAuthentication;
 import me.infuzion.chess.web.game.User;
 import me.infuzion.chess.web.record.source.UserDatabase;
 import me.infuzion.web.server.EventListener;
 import me.infuzion.web.server.event.def.PageRequestEvent;
 import me.infuzion.web.server.event.reflect.EventHandler;
 import me.infuzion.web.server.event.reflect.Route;
-import me.infuzion.web.server.util.HTTPMethod;
+import me.infuzion.web.server.event.reflect.param.mapper.impl.BodyParam;
+import me.infuzion.web.server.event.reflect.param.mapper.impl.Response;
+import me.infuzion.web.server.event.reflect.param.mapper.impl.UrlParam;
+import me.infuzion.web.server.http.HttpResponse;
+import me.infuzion.web.server.router.RouteMethod;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 
 import javax.imageio.ImageIO;
@@ -23,7 +27,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Map;
 
 public class ChessUserListener implements EventListener {
     private final static RandomString randomStrings = new RandomString(32);
@@ -71,62 +74,50 @@ public class ChessUserListener implements EventListener {
     }
 
     @EventHandler
-    @Route(path = "/api/v1/users/:user_id/preview")
-    public void onImageGet(PageRequestEvent event, Map<String, String> map) {
-        User user = database.getUser(new Identifier(map.get("user_id")));
+    @Route("/api/v1/users/:user_id/preview")
+    @Response(value = "image/png", raw = true)
+    public byte[] onImageGet(PageRequestEvent event, @UrlParam("user_id") String userId) throws IOException {
+        HttpResponse response = event.getResponse();
+        User user = database.getUser(new Identifier(userId));
         if (user != null) {
-            try {
-                Path pathToImage = Paths.get(user.getImagePath());
-                System.out.println(pathToImage.toString());
-                byte[] image;
+            Path pathToImage = Paths.get(user.getImagePath());
+            byte[] image;
 
-                if (pathToImage.equals(Path.of("/images/unknown.png"))) {
-                    image = drawErrorString(user.getUsername());
-
-                } else {
-                    image = Files.readAllBytes(pathToImage);
-                }
-                event.setResponseData(image);
-                event.setContentType("image/png");
-            } catch (IOException e) {
-                e.printStackTrace();
+            if (pathToImage.equals(Path.of("/images/unknown.png"))) {
+                image = drawErrorString(user.getUsername());
+            } else {
+                image = Files.readAllBytes(pathToImage);
             }
+            return image;
         } else {
-            event.setStatusCode(404);
-            try {
-                event.setResponseData(drawErrorString("user not found"));
-                event.setContentType("image/png");
-            } catch (IOException e) {
-                JsonObject object = new JsonObject();
-                object.addProperty("error", "user not found");
-                event.setResponseData(ChessUtilities.gson.toJson(object));
-            }
+            response.setStatusCode(404);
+            return drawErrorString("user not found");
         }
     }
 
-    @EventHandler
-    public void onImageUpdate(AuthenticatedPageRequestEvent event) {
-        if (event.getEvent().getPage().equalsIgnoreCase(EndPointURL.USER_IMAGE_CHANGE) && event.getEvent().getMethod() == HTTPMethod.POST) {
-            JsonObject object = new JsonObject();
-            try {
-                byte[] image = event.getEvent().getRawMultipartFormData().get("file");
-                if (ImageIO.read(new ByteArrayInputStream(image)) == null) {
-                    throw new IOException("invalid image");
-                }
-                Path path = Paths.get(".", "images");
-                Files.createDirectories(path);
-                String imagePath = randomStrings.nextString();
-
-                path = path.resolve(imagePath + ".png");
-                Files.createFile(path);
-                Files.write(path, image);
-                database.updateImagePath(event.getId(), path.toString());
-                object.addProperty("success", true);
-            } catch (IOException e) {
-                e.printStackTrace();
-                object.addProperty("error", "invalid image");
+    @EventHandler(PageRequestEvent.class)
+    @Route(value = EndPointURL.USER_IMAGE_CHANGE, methods = RouteMethod.POST)
+    @Response("application/json")
+    @RequiresAuthentication
+    public JsonObject onImageUpdate(@RequestUser User user, @BodyParam("file") byte[] image) {
+        JsonObject object = new JsonObject();
+        try {
+            if (ImageIO.read(new ByteArrayInputStream(image)) == null) {
+                throw new IOException("invalid image");
             }
-            event.getEvent().setResponseData(ChessUtilities.gson.toJson(object));
+            Path path = Paths.get(".", "images");
+            Files.createDirectories(path);
+            String imagePath = randomStrings.nextString();
+
+            path = path.resolve(imagePath + ".png");
+            Files.createFile(path);
+            Files.write(path, image);
+            database.updateImagePath(user.getIdentifier(), path.toString());
+            object.addProperty("success", true);
+        } catch (IOException e) {
+            e.printStackTrace();
+            object.addProperty("error", "invalid image");
         }
+        return object;
     }
 }
