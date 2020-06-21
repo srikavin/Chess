@@ -1,16 +1,18 @@
-language: java
-
 services:
   - postgresql
-
-before_script:
-  - psql -c 'create database travis_ci_test;' -U postgres
-
-env:
-  JDBC_DATABASE_URL="jdbc:postgresql://localhost/travis_ci_test?user=postgres&password="
 
 jdk:
   - openjdk14
 
+before_script:
+  - psql --version
+  - psql -c 'create database travis_ci_test;' -U postgres
+
 after_success:
   - bash <(curl -s https://codecov.io/bash)
+
+script: mvn clean verify
+
+env:
+  global:
+    - JDBC_DATABASE_URL="jdbc:postgresql://localhost:5432/travis_ci_test?user=postgres&password="

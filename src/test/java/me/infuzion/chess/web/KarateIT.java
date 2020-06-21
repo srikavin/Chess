@@ -23,7 +23,7 @@ import org.junit.jupiter.api.BeforeAll;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 
-public class KarateTest {
+public class KarateIT {
     static Thread t;
 
     @BeforeAll
@@ -49,7 +49,6 @@ public class KarateTest {
 
     @Karate.Test
     Karate testSample() {
-
-        return Karate.run("WebTestt").relativeTo(getClass());
+        return Karate.run("Games").relativeTo(getClass());
     }
 }
