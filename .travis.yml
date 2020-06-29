@@ -8,10 +8,11 @@ before_script:
   - psql --version
   - psql -c 'create database travis_ci_test;' -U postgres
 
-after_success:
-  - bash <(curl -s https://codecov.io/bash)
-
-script: mvn clean verify
+script:
+  - mvn clean test
+  - bash <(curl -s https://codecov.io/bash) -c -F unit-tests
+  - mvn clean integration-test -Dtest=**/*IT
+  - bash <(curl -s https://codecov.io/bash) -c -F integration-tests
 
 env:
   global:
