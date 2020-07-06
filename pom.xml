@@ -160,7 +160,6 @@
                             <goal>test</goal>
                         </goals>
                         <configuration>
-                            <skipTests>false</skipTests>
                             <includes>
                                 <include>**/*Test.java</include>
                             </includes>
@@ -173,7 +172,6 @@
                             <goal>test</goal>
                         </goals>
                         <configuration>
-                            <skipTests>false</skipTests>
                             <includes>
                                 <include>**/*IT.java</include>
                             </includes>
