@@ -1,5 +1,6 @@
 package me.infuzion.chess.piece;
 
+import me.infuzion.chess.board.BoardData;
 import me.infuzion.chess.board.ChessBoard;
 import me.infuzion.chess.board.ChessPosition;
 import org.junit.jupiter.api.Test;
@@ -17,7 +18,9 @@ class KnightTest {
     @Test
     void allowed() {
         Knight knight = new Knight(Color.BLACK, new ChessPosition(3, 3));
-        ChessBoard def = ChessBoard.getDefaultBoard();
+        BoardData def = ChessBoard.getDefaultBoard().getData();
+
+        def.setPiece(knight.currentPosition(), knight);
 
         assertTrue(knight.allowed(def, new ChessPosition(5, 4)));
         assertTrue(knight.allowed(def, new ChessPosition(5, 2)));

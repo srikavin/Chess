@@ -14,16 +14,18 @@
  * limitations under the License.
  */
 
-package me.infuzion.chess.web.event.helper;
+package me.infuzion.chess.web.listener;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
+import org.jetbrains.annotations.Nullable;
 
-@Retention(RetentionPolicy.RUNTIME)
-public @interface RequiresAuthentication {
-    AuthenticationChecks value() default AuthenticationChecks.NONE;
+public class ChessWebResponse {
+    final String error;
 
-    String request() default "";
+    protected ChessWebResponse(@Nullable String error) {
+        this.error = error;
+    }
 
-    boolean requireLoggedIn() default true;
+    protected ChessWebResponse() {
+        this.error = null;
+    }
 }

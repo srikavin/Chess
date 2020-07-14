@@ -14,16 +14,22 @@
  * limitations under the License.
  */
 
-package me.infuzion.chess.web.event.helper;
+package me.infuzion.chess.web.listener.game;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
+public abstract class ChessWebsocketResponse {
+    final String type;
+    final String error;
+    final boolean success;
 
-@Retention(RetentionPolicy.RUNTIME)
-public @interface RequiresAuthentication {
-    AuthenticationChecks value() default AuthenticationChecks.NONE;
+    protected ChessWebsocketResponse(String type) {
+        this.type = type;
+        this.error = null;
+        this.success = true;
+    }
 
-    String request() default "";
-
-    boolean requireLoggedIn() default true;
+    protected ChessWebsocketResponse(String type, String error) {
+        this.type = type;
+        this.error = error;
+        this.success = false;
+    }
 }

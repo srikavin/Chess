@@ -14,16 +14,8 @@
  * limitations under the License.
  */
 
-package me.infuzion.chess.web.event.helper;
+package me.infuzion.chess.web.domain;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-
-@Retention(RetentionPolicy.RUNTIME)
-public @interface RequiresAuthentication {
-    AuthenticationChecks value() default AuthenticationChecks.NONE;
-
-    String request() default "";
-
-    boolean requireLoggedIn() default true;
+public class Variants {
+    public static final String STANDARD_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 }

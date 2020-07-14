@@ -1,55 +1,58 @@
 package me.infuzion.chess.board;
 
+/**
+ * rank 0 and file 0 is the position a1
+ */
 public class ChessPosition {
 
-    private final static Character[] columns = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'};
+    private final static Character[] rankLetters = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'};
 
-    private final int row;
-    private final int col;
+    private final int rank;
+    private final int file;
 
-    public ChessPosition(int row, int col) {
-        if (row >= 8 || row < 0) {
-            throw new IllegalArgumentException("Invalid row value: " + row);
+    public ChessPosition(int rank, int file) {
+        if (rank >= 8 || rank < 0) {
+            throw new IllegalArgumentException("Invalid rank value: " + rank);
         }
-        if (col >= 8 || col < 0) {
-            throw new IllegalArgumentException("Invalid col value: " + col);
+        if (file >= 8 || file < 0) {
+            throw new IllegalArgumentException("Invalid file value: " + file);
         }
-        this.row = row;
-        this.col = col;
+        this.rank = rank;
+        this.file = file;
     }
 
     public ChessPosition(int row, char col) {
-        this(col + String.valueOf(row));
+        this(rankCharToRank(col), row - 1);
     }
 
     public ChessPosition(String algebraicNotation) {
-        this(8 - Integer.parseInt(algebraicNotation.substring(1)), colCharToInt(algebraicNotation.charAt(0)));
+        this(Integer.parseInt(algebraicNotation.substring(1)), algebraicNotation.charAt(0));
     }
 
-    public static int colCharToInt(char col) {
-        char colLowerCase = Character.toLowerCase(col);
-        for (int i = 0; i < columns.length; i++) {
-            if (colLowerCase == columns[i]) {
+    public static int rankCharToRank(char file) {
+        char colLowerCase = Character.toLowerCase(file);
+        for (int i = 0; i < rankLetters.length; i++) {
+            if (colLowerCase == rankLetters[i]) {
                 return i;
             }
         }
         throw new IllegalArgumentException("Invalid Input: " + colLowerCase);
     }
 
-    public int getRow() {
-        return row;
+    public int getRank() {
+        return rank;
     }
 
-    public char getColChar() {
-        return columns[col];
+    public char getFileChar() {
+        return rankLetters[file];
     }
 
     public String getPosition() {
-        return columns[col] + String.valueOf((8 - row));
+        return rankLetters[rank] + String.valueOf(file + 1);
     }
 
-    public int getCol() {
-        return col;
+    public int getFile() {
+        return file;
     }
 
     @Override
@@ -58,10 +61,8 @@ public class ChessPosition {
             return true;
         }
         if (obj instanceof ChessPosition) {
-            if (((ChessPosition) obj).row == row) {
-                if (((ChessPosition) obj).col == col) {
-                    return true;
-                }
+            if (((ChessPosition) obj).rank == rank) {
+                return ((ChessPosition) obj).file == file;
             }
         }
         return false;
@@ -69,6 +70,6 @@ public class ChessPosition {
 
     @Override
     public String toString() {
-        return "[row] = " + row + ", [col] " + col;
+        return getPosition();
     }
 }

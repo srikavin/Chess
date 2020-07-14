@@ -14,16 +14,32 @@
  * limitations under the License.
  */
 
-package me.infuzion.chess.web.event.helper;
+package me.infuzion.chess.web.domain;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
+public enum GameStatus {
+    IN_PROGRESS_WHITE(0),
+    IN_PROGRESS_BLACK(1),
+    ENDED_DRAW(2),
+    ENDED_WHITE_WINS(3),
+    ENDED_BLACK_WINS(4),
+    WAITING(5);
+    public static final GameStatus[] values = values();
+    private final int value;
 
-@Retention(RetentionPolicy.RUNTIME)
-public @interface RequiresAuthentication {
-    AuthenticationChecks value() default AuthenticationChecks.NONE;
+    GameStatus(int value) {
+        this.value = value;
+    }
 
-    String request() default "";
+    public int getValue() {
+        return value;
+    }
 
-    boolean requireLoggedIn() default true;
+    public GameStatus valueOf(int value) {
+        for (GameStatus e : values) {
+            if (e.value == value) {
+                return e;
+            }
+        }
+        return null;
+    }
 }

@@ -18,7 +18,7 @@ package me.infuzion.chess.web.event.helper;
 
 import com.google.common.flogger.FluentLogger;
 import me.infuzion.chess.web.TokenHandler;
-import me.infuzion.chess.web.game.User;
+import me.infuzion.chess.web.domain.User;
 import me.infuzion.chess.web.listener.ChessAuthenticationHelper;
 import me.infuzion.web.server.event.Event;
 import me.infuzion.web.server.event.reflect.param.HasBody;

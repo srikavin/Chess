@@ -4,7 +4,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class Identifier {
 
-    private final static RandomString generator = new RandomString(16);
+    private final static RandomStringGenerator generator = new RandomStringGenerator(16);
 
     private final String id;
 

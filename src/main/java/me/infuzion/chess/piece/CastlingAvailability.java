@@ -14,16 +14,11 @@
  * limitations under the License.
  */
 
-package me.infuzion.chess.web.event.helper;
+package me.infuzion.chess.piece;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-
-@Retention(RetentionPolicy.RUNTIME)
-public @interface RequiresAuthentication {
-    AuthenticationChecks value() default AuthenticationChecks.NONE;
-
-    String request() default "";
-
-    boolean requireLoggedIn() default true;
+public enum CastlingAvailability {
+    WHITE_QUEEN_SIDE,
+    WHITE_KING_SIDE,
+    BLACK_QUEEN_SIDE,
+    BLACK_KING_SIDE
 }

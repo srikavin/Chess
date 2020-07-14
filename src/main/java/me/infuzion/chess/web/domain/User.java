@@ -1,4 +1,20 @@
-package me.infuzion.chess.web.game;
+/*
+ * Copyright 2020 Srikavin Ramkumar
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package me.infuzion.chess.web.domain;
 
 import com.google.gson.JsonObject;
 import me.infuzion.chess.util.ChessObject;
@@ -11,8 +27,8 @@ public class User extends ChessObject {
     private final String imagePath;
 
     public User(Identifier identifier, String username, long lastSeen, String bio, String imagePath) {
-        this.imagePath = imagePath;
         setIdentifier(identifier);
+        this.imagePath = imagePath;
         this.username = username;
         this.lastSeen = lastSeen;
         this.bio = bio == null ? "" : bio;

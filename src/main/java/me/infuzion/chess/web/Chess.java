@@ -1,24 +1,27 @@
 package me.infuzion.chess.web;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+import me.infuzion.chess.util.Identifier;
+import me.infuzion.chess.web.dao.impl.MatchDatabase;
+import me.infuzion.chess.web.dao.impl.UserDatabase;
+import me.infuzion.chess.web.domain.service.GameService;
 import me.infuzion.chess.web.event.helper.RequestUser;
 import me.infuzion.chess.web.event.helper.RequestUserParamMapper;
 import me.infuzion.chess.web.event.helper.RequireAuthenticationPredicate;
 import me.infuzion.chess.web.event.helper.RequiresAuthentication;
-import me.infuzion.chess.web.game.User;
-import me.infuzion.chess.web.listener.*;
-import me.infuzion.chess.web.record.source.MatchDatabase;
-import me.infuzion.chess.web.record.source.UserDatabase;
+import me.infuzion.chess.web.listener.ChessAuthenticationHelper;
+import me.infuzion.chess.web.listener.ChessUserAuthenticationListener;
+import me.infuzion.chess.web.listener.ChessUserProfileListener;
+import me.infuzion.chess.web.listener.game.ChessGameListener;
+import me.infuzion.chess.web.listener.game.ChessMoveListener;
 import me.infuzion.web.server.EventListener;
 import me.infuzion.web.server.Server;
 import me.infuzion.web.server.event.EventManager;
-import me.infuzion.web.server.event.def.WebSocketTextMessageEvent;
+import me.infuzion.web.server.event.def.PageRequestEvent;
 import me.infuzion.web.server.event.reflect.EventHandler;
-import me.infuzion.web.server.event.reflect.param.mapper.impl.BodyParam;
-import me.infuzion.web.server.event.reflect.param.mapper.impl.Response;
 
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
 
 public class Chess implements EventListener {
 
@@ -29,20 +32,33 @@ public class Chess implements EventListener {
     public Chess(Server server) throws IOException {
         this.manager = server.getEventManager();
         try {
-            Class.forName("org.postgresql.Driver");
             String url = System.getenv("JDBC_DATABASE_URL");
-            Connection c = DriverManager.getConnection(url);
-            userDatabase = new UserDatabase(c);
-            matchDatabase = new MatchDatabase(c);
+
+            Class.forName("org.postgresql.Driver");
+
+            HikariConfig config = new HikariConfig();
+            config.setJdbcUrl(url);
+
+            config.setMaximumPoolSize(10);
+            config.addDataSourceProperty("cachePrepStmts", "true");
+            config.addDataSourceProperty("prepStmtCacheSize", "250");
+            config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
+
+            HikariDataSource ds = new HikariDataSource(config);
+
+            userDatabase = new UserDatabase(ds);
+            matchDatabase = new MatchDatabase(ds);
+
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(-1);
             throw new RuntimeException(e);
         }
 
-//        userDatabase.addUser(new Identifier(), "testuser", "password");
-
+        GameService gameService = new GameService(matchDatabase);
         TokenHandler handler = new TokenHandler();
+
+        userDatabase.createUser(new Identifier(), "testuser", "password");
 
         System.out.println(handler.addUser(userDatabase.getUser("testuser")));
 
@@ -51,20 +67,15 @@ public class Chess implements EventListener {
 
         manager.registerListener(this);
         manager.registerListener(new ChessAuthenticationHelper(handler));
-        manager.registerListener(new ChessGamePreviewListener(matchDatabase));
-        manager.registerListener(new ChessAuthentication(userDatabase, handler));
-        manager.registerListener(new ChessMoveListener(matchDatabase, manager));
-        manager.registerListener(new ChessGameCreateListener(matchDatabase));
-        manager.registerListener(new ChessUserListener(userDatabase));
-        manager.registerListener(new ChessGameInfoListener(matchDatabase, userDatabase));
+        manager.registerListener(new ChessUserAuthenticationListener(userDatabase, handler));
+        manager.registerListener(new ChessMoveListener(gameService, manager));
+        manager.registerListener(new ChessUserProfileListener(userDatabase));
+        manager.registerListener(new ChessGameListener(matchDatabase, gameService, userDatabase));
 
         manager.registerListener(new EventListener() {
-            @EventHandler(WebSocketTextMessageEvent.class)
-            @RequiresAuthentication
-            @Response
-            private User test(@BodyParam("request") String request, @RequestUser User user) {
-                System.out.println(request);
-                return user;
+            @EventHandler()
+            private void test(PageRequestEvent event) {
+                event.setResponseHeader("Access-Control-Allow-Origin", "*");
             }
         });
 

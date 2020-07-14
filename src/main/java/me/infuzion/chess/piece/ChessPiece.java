@@ -2,95 +2,76 @@ package me.infuzion.chess.piece;
 
 import me.infuzion.chess.board.BoardData;
 import me.infuzion.chess.board.ChessBoard;
+import me.infuzion.chess.board.ChessMove;
 import me.infuzion.chess.board.ChessPosition;
-import me.infuzion.chess.piece.movement.MoveType;
-import me.infuzion.chess.piece.movement.MoveTypes;
-import me.infuzion.chess.piece.movement.type.CheckMovement;
 
 public abstract class ChessPiece implements Cloneable {
 
     private final Color color;
+    private final PieceType type;
     private ChessPosition position;
-    private transient MoveType[] moveTypes;
-    private transient MoveType[] requiredTypes;
-    private PieceType type;
 
-    public ChessPiece(Color color, ChessPosition position) {
+    public ChessPiece(Color color, ChessPosition position, PieceType type) {
         this.color = color;
         this.position = position;
-        setRequiredTypes(MoveTypes.NO_FRIENDLY_CAPTURES, MoveTypes.CHECK_MOVEMENT);
+        this.type = type;
     }
 
     public final PieceType getType() {
         return type;
     }
 
-    protected void setType(PieceType type) {
-        this.type = type;
-    }
+    public abstract boolean isMoveAllowedIgnoringCheck(BoardData data, ChessMove move, boolean excludeCastling);
 
-    public boolean allowed(BoardData board, ChessPosition end, boolean ignoreCheck) {
-        for (MoveType e : requiredTypes) {
-            if (ignoreCheck && e instanceof CheckMovement) {
-                continue;
-            }
-            if (!e.allowed(board, this, position, end)) {
-                System.out.println(e.getClass() + " Returned false!");
-                return false;
-            }
+    /**
+     * @param data Board data to use to calculate if the movement is possible
+     * @param move The move to check
+     * @return Returns true if the movement is allowed; False otherwise.
+     */
+    public boolean allowed(BoardData data, ChessMove move, boolean ignoreCheck) {
+        if (!move.getSource().equals(this.position)) {
+            throw new RuntimeException("move does not apply to this piece!");
         }
-        for (MoveType e : moveTypes) {
-            if (e.allowed(board, this, position, end)) {
-                return true;
-            }
+
+        if (move.getSource().equals(move.getEnd()) ||
+                (data.getPiece(move.getEnd()) != null && data.getPiece(move.getEnd()).color == color)) {
+            return false;
         }
-        return false;
+
+        if (!isMoveAllowedIgnoringCheck(data, move, false)) {
+            return false;
+        }
+
+        return ignoreCheck || !ChessBoard.isUnderCheckAfterMove(data, color, move);
     }
 
-    public boolean allowed(BoardData board, ChessPosition end) {
-        return allowed(board, end, false);
+    public boolean allowed(BoardData data, ChessPosition end) {
+        return allowed(data, new ChessMove(this.currentPosition(), end), false);
     }
 
-    public boolean allowed(ChessBoard board, ChessPosition end) {
-        return allowed(board.getData(), end);
+    public boolean move(ChessBoard board, ChessMove move) {
+        return move(board, move, false);
     }
 
-    public boolean move(ChessBoard board, ChessPosition end) {
-        if (allowed(board.getData(), end)) {
-            board.move(this, position, end);
-            board.getData().setPiece(position, null);
-            board.getData().setPiece(end, this);
-            this.position = end;
+    public void executeMoveWithoutValidation(ChessBoard board, ChessMove move) {
+        board.recordMove(move);
+        board.getData().setEnPassantSquare(null);
+        executeMove(board, move);
+        this.position = move.getEnd();
+    }
+
+    protected void executeMove(ChessBoard board, ChessMove move) {
+        board.getData().setPiece(position, null);
+        board.getData().setPiece(move.getEnd(), this);
+    }
+
+    public boolean move(ChessBoard board, ChessMove move, boolean ignoreCheck) {
+        if (allowed(board.getData(), move, ignoreCheck)) {
+            executeMoveWithoutValidation(board, move);
             return true;
         }
+
         return false;
-    }
-
-    protected void setRequiredTypes(MoveTypes... types) {
-        MoveType[] converted = new MoveType[types.length];
-
-        for (int i = 0; i < types.length; i++) {
-            converted[i] = types[i].getType();
-        }
-        setRequiredTypes(converted);
-    }
-
-    protected void setRequiredTypes(MoveType... types) {
-        this.requiredTypes = types;
-    }
-
-
-    protected void setMovementTypes(MoveTypes... types) {
-        MoveType[] converted = new MoveType[types.length];
-
-        for (int i = 0; i < types.length; i++) {
-            converted[i] = types[i].getType();
-        }
-        setMovementTypes(converted);
-    }
-
-    protected void setMovementTypes(MoveType... types) {
-        this.moveTypes = types;
     }
 
     public Color getColor() {

@@ -20,11 +20,13 @@ import com.google.common.flogger.FluentLogger;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import me.infuzion.chess.web.TokenHandler;
-import me.infuzion.chess.web.game.User;
+import me.infuzion.chess.web.domain.User;
 import me.infuzion.chess.web.listener.ChessAuthenticationHelper;
 import me.infuzion.web.server.event.Event;
 import me.infuzion.web.server.event.reflect.param.CanSetBody;
+import me.infuzion.web.server.event.reflect.param.DefaultTypeConverter;
 import me.infuzion.web.server.event.reflect.param.HasBody;
+import me.infuzion.web.server.event.reflect.param.TypeConverter;
 import me.infuzion.web.server.event.reflect.param.mapper.EventPredicate;
 import me.infuzion.web.server.http.parser.BodyData;
 
@@ -35,13 +37,14 @@ import java.util.WeakHashMap;
 public class RequireAuthenticationPredicate implements EventPredicate<RequiresAuthentication, HasBody> {
     private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
-    private final Set<HasBody> failedEvents = Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
+    private final Set<HasBody> preventSendAuthFailedMessage = Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
     private static final String authErrorResponse;
     private final ChessAuthenticationHelper authenticationHelper;
+    private final TypeConverter typeConverter = new DefaultTypeConverter();
 
     static {
         JsonObject body = new JsonObject();
-        body.addProperty("error", "invalid auth token");
+        body.addProperty("error", "invalid auth token or request type");
         authErrorResponse = new Gson().toJson(body);
     }
 
@@ -51,9 +54,15 @@ public class RequireAuthenticationPredicate implements EventPredicate<RequiresAu
 
     @Override
     public boolean shouldCall(RequiresAuthentication annotation, HasBody event) {
+        if (!annotation.requireLoggedIn()) {
+            preventSendAuthFailedMessage.add(event);
+            return true;
+        }
+
         User user = authenticationHelper.getUser(event);
 
         if (user == null) {
+            System.out.println(1);
             return false;
         }
 
@@ -61,19 +70,26 @@ public class RequireAuthenticationPredicate implements EventPredicate<RequiresAu
             BodyData.BodyField field = event.getBodyData().getFields().get("request");
 
             if (field == null) {
+                System.out.println(2);
                 return false;
             }
 
-            return field.getContent().equals(annotation.request());
+            if (typeConverter.deserialize(field.getContent(), String.class).equals(annotation.request())) {
+                preventSendAuthFailedMessage.add(event);
+                return true;
+            }
+            System.out.println(4);
+            return false;
         }
 
+        preventSendAuthFailedMessage.add(event);
         return true;
     }
 
     @Override
     public void onCallPrevented(RequiresAuthentication annotation, HasBody event) {
         //ensure the body is only set once
-        if (failedEvents.add(event)) {
+        if (preventSendAuthFailedMessage.add(event)) {
             if (event instanceof CanSetBody) {
                 ((CanSetBody) event).setResponseBody(authErrorResponse);
             }

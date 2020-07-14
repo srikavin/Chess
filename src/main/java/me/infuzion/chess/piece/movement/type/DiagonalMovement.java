@@ -1,26 +1,19 @@
 package me.infuzion.chess.piece.movement.type;
 
 import me.infuzion.chess.board.BoardData;
+import me.infuzion.chess.board.ChessMove;
 import me.infuzion.chess.board.ChessPosition;
 import me.infuzion.chess.piece.ChessPiece;
-import me.infuzion.chess.piece.movement.MoveType;
 
-public class DiagonalMovement implements MoveType {
+public class DiagonalMovement {
+    public static boolean allowed(BoardData board, ChessPiece piece, ChessMove move) {
+        ChessPosition start = move.getSource();
+        ChessPosition end = move.getEnd();
 
-    /**
-     * @inheritDoc
-     */
-    @Override
-    public boolean allowed(BoardData board, ChessPiece piece, ChessPosition start,
-                           ChessPosition end) {
-        int startX = start.getRow();
-        int startY = start.getCol();
-        int endX = end.getRow();
-        int endY = end.getCol();
-
-        if (start.equals(end)) {
-            return false;
-        }
+        int startX = start.getRank();
+        int startY = start.getFile();
+        int endX = end.getRank();
+        int endY = end.getFile();
 
         if (Math.abs(startX - endX) != Math.abs(startY - endY)) {
             return false;
@@ -34,19 +27,27 @@ public class DiagonalMovement implements MoveType {
         int curY = startY;
         curX += xMovement;
         curY += yMovement;
+
         while (true) {
             // Returns false if out of bounds
-            if (curX > 8 || curX < 0 || curY > 8 || curY < 0) {
+            if (curX >= 8 || curX < 0 || curY >= 8 || curY < 0) {
                 return false;
             }
-            // Returns true if the current x and y match the ending x and y
-            if (curX == endX && curY == endY) {
-                return true;
-            }
+
             // Checks if the current piece is null. If it isn't return false because a piece is in
             // the way of movement
             if (board.getPiece(curX, curY) != null) {
-                return false;
+                if (curX != endX || curY != endY) {
+                    return false;
+                }
+
+                //ensure captured piece is of opposite color
+                return board.getPiece(curX, curY).getColor() != piece.getColor();
+            }
+
+            // Returns true if the current x and y match the ending x and y
+            if (curX == endX && curY == endY) {
+                return true;
             }
             curX += xMovement;
             curY += yMovement;

@@ -14,16 +14,24 @@
  * limitations under the License.
  */
 
-package me.infuzion.chess.web.event.helper;
+package me.infuzion.chess.web.dao;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
+import me.infuzion.chess.util.Identifier;
+import me.infuzion.chess.web.domain.User;
+import org.jetbrains.annotations.Nullable;
 
-@Retention(RetentionPolicy.RUNTIME)
-public @interface RequiresAuthentication {
-    AuthenticationChecks value() default AuthenticationChecks.NONE;
+public interface UserDao {
+    @Nullable
+    User getUser(Identifier id);
 
-    String request() default "";
+    @Nullable
+    User getUser(String username);
 
-    boolean requireLoggedIn() default true;
+    @Nullable
+    User checkLoginAndGetUser(String username, String password);
+
+    @Nullable
+    User createUser(Identifier id, String username, String password);
+
+    void deleteUser(Identifier identifier);
 }

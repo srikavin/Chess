@@ -1,7 +1,7 @@
 package me.infuzion.chess.web;
 
 import me.infuzion.chess.util.Identifier;
-import me.infuzion.chess.web.game.User;
+import me.infuzion.chess.web.domain.User;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -21,7 +21,7 @@ public class TokenHandler {
         Identifier identifier = userIdentifierMap.get(user);
 
         if (identifier == null) {
-            identifier = new Identifier();
+            identifier = new Identifier("VkpCLJmaVDYi3f7D");
         }
 
         userIdentifierMap.put(user, identifier);

@@ -2,7 +2,7 @@ package me.infuzion.chess.util;
 
 import java.security.SecureRandom;
 
-public class RandomString {
+public class RandomStringGenerator {
 
     private static final SecureRandom random = new SecureRandom();
     private static final char[] symbols;
@@ -23,7 +23,7 @@ public class RandomString {
 
     private final char[] buf;
 
-    public RandomString(int length) {
+    public RandomStringGenerator(int length) {
         if (length < 1) {
             throw new IllegalArgumentException("length < 1: " + length);
         }

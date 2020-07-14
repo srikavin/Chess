@@ -2,12 +2,11 @@ package me.infuzion.chess.web.listener;
 
 import com.google.gson.JsonObject;
 import me.infuzion.chess.util.Identifier;
-import me.infuzion.chess.util.RandomString;
-import me.infuzion.chess.web.event.EndPointURL;
+import me.infuzion.chess.util.RandomStringGenerator;
+import me.infuzion.chess.web.dao.impl.UserDatabase;
+import me.infuzion.chess.web.domain.User;
 import me.infuzion.chess.web.event.helper.RequestUser;
 import me.infuzion.chess.web.event.helper.RequiresAuthentication;
-import me.infuzion.chess.web.game.User;
-import me.infuzion.chess.web.record.source.UserDatabase;
 import me.infuzion.web.server.EventListener;
 import me.infuzion.web.server.event.def.PageRequestEvent;
 import me.infuzion.web.server.event.reflect.EventHandler;
@@ -22,14 +21,16 @@ import org.apache.commons.io.output.ByteArrayOutputStream;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-public class ChessUserListener implements EventListener {
-    private final static RandomString randomStrings = new RandomString(32);
+public class ChessUserProfileListener implements EventListener {
+    private final static RandomStringGenerator randomStringGenerator = new RandomStringGenerator(32);
     private final static Font font;
     private final static Rectangle errorRect = new Rectangle(0, 206, 640, 228);
 
@@ -37,9 +38,8 @@ public class ChessUserListener implements EventListener {
         GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
         Font tmp;
         try {
-            Font rFont = Font.createFont(Font.TRUETYPE_FONT,
-                    new Object() {
-                    }.getClass().getEnclosingClass().getResourceAsStream("/fonts/PTSans55F.ttf"));
+            Font rFont = Font.createFont(Font.TRUETYPE_FONT, ChessUserProfileListener.class
+                    .getResourceAsStream("/fonts/PTSans55F.ttf"));
             ge.registerFont(rFont);
             tmp = rFont;
 
@@ -52,7 +52,7 @@ public class ChessUserListener implements EventListener {
 
     private final UserDatabase database;
 
-    public ChessUserListener(UserDatabase database) {
+    public ChessUserProfileListener(UserDatabase database) {
         this.database = database;
     }
 
@@ -71,6 +71,32 @@ public class ChessUserListener implements EventListener {
             ImageIO.write(img, "png", baos);
             return baos.toByteArray();
         }
+    }
+
+    @EventHandler
+    @Route("/api/v1/users/:user_id")
+    @Response("application/json")
+    public JsonObject getUserById(PageRequestEvent event, @UrlParam("user_id") String id) {
+        User user = database.getUser(new Identifier(id));
+
+        if (user == null) {
+            return new JsonObject();
+        }
+
+        return user.toJson();
+    }
+
+    @EventHandler
+    @Route("/api/v1/users/")
+    @Response("application/json")
+    public JsonObject getUserByUsername(PageRequestEvent event, @UrlParam("username") String username) {
+        User user = database.getUser(username);
+
+        if (user == null) {
+            return new JsonObject();
+        }
+
+        return user.toJson();
     }
 
     @EventHandler
@@ -96,22 +122,26 @@ public class ChessUserListener implements EventListener {
     }
 
     @EventHandler(PageRequestEvent.class)
-    @Route(value = EndPointURL.USER_IMAGE_CHANGE, methods = RouteMethod.POST)
+    @Route(value = "/api/v1/me/image", methods = RouteMethod.POST)
     @Response("application/json")
     @RequiresAuthentication
-    public JsonObject onImageUpdate(@RequestUser User user, @BodyParam("file") byte[] image) {
+    public JsonObject onImageUpdate(@RequestUser User user, @BodyParam(raw = true) ByteBuffer image) {
         JsonObject object = new JsonObject();
         try {
-            if (ImageIO.read(new ByteArrayInputStream(image)) == null) {
-                throw new IOException("invalid image");
-            }
             Path path = Paths.get(".", "images");
             Files.createDirectories(path);
-            String imagePath = randomStrings.nextString();
 
-            path = path.resolve(imagePath + ".png");
-            Files.createFile(path);
-            Files.write(path, image);
+            String imagePath = randomStringGenerator.nextString() + ".png";
+
+            path = path.resolve(imagePath);
+
+            RandomAccessFile file = new RandomAccessFile(path.toFile(), "rw");
+            FileChannel channel = file.getChannel();
+
+            channel.write(image);
+            channel.close();
+            file.close();
+
             database.updateImagePath(user.getIdentifier(), path.toString());
             object.addProperty("success", true);
         } catch (IOException e) {

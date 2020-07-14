@@ -1,6 +1,7 @@
 package me.infuzion.chess.util;
 
 import me.infuzion.chess.board.ChessBoard;
+import me.infuzion.chess.board.ChessMove;
 import me.infuzion.chess.board.ChessPosition;
 import me.infuzion.chess.piece.ChessPiece;
 import me.infuzion.chess.piece.Color;
@@ -87,7 +88,7 @@ public class PGNParser {
             end = pos2;
         }
 
-        return start.move(board, end);
+        return start.move(board, new ChessMove(start.currentPosition(), end));
     }
 
     private enum Tokens {

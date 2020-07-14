@@ -1,16 +1,20 @@
 package me.infuzion.chess.util;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonParser;
-
-import java.lang.reflect.Modifier;
+import com.google.gson.*;
+import me.infuzion.chess.board.ChessPosition;
 
 public class ChessUtilities {
     public final static Gson gson;
 
     static {
         GsonBuilder builder = new GsonBuilder();
-        gson = builder.enableComplexMapKeySerialization().setPrettyPrinting().serializeNulls().create();
+        gson = builder.enableComplexMapKeySerialization().setPrettyPrinting()
+                .registerTypeAdapter(Identifier.class,
+                        (JsonSerializer<Identifier>) (src, typeOfSrc, context) -> new JsonPrimitive(src.toString())
+                ).registerTypeAdapter(ChessPosition.class,
+                        (JsonSerializer<ChessPosition>) (src, typeOfSrc, context) -> new JsonPrimitive(src.getPosition())
+                ).registerTypeAdapter(ChessPosition.class,
+                        (JsonDeserializer<ChessPosition>) (json, type, context) -> new ChessPosition(json.getAsString())
+                ).create();
     }
 }

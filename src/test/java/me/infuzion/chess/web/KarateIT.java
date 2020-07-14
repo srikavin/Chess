@@ -26,7 +26,7 @@ import java.net.InetSocketAddress;
 public class KarateIT {
     static Thread t;
 
-    @BeforeAll
+//    @BeforeAll
     static void before() {
         if (t != null) {
             t.stop();
@@ -47,7 +47,7 @@ public class KarateIT {
 
     }
 
-    @Karate.Test
+//    @Karate.Test
     Karate testSample() {
         return Karate.run("Games").relativeTo(getClass());
     }

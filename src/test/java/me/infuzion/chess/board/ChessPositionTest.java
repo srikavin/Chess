@@ -11,13 +11,13 @@ class ChessPositionTest {
         int[] values = {0, 1, 2, 3, 4, 5, 6, 7};
 
         for (int i = 0; i < inputs.length; i++) {
-            assertEquals(values[i], ChessPosition.colCharToInt(inputs[i]));
+            assertEquals(values[i], ChessPosition.rankCharToRank(inputs[i]));
         }
 
-        assertThrows(IllegalArgumentException.class, () -> ChessPosition.colCharToInt('s'));
-        assertThrows(IllegalArgumentException.class, () -> ChessPosition.colCharToInt('1'));
-        assertThrows(IllegalArgumentException.class, () -> ChessPosition.colCharToInt('z'));
-        assertThrows(IllegalArgumentException.class, () -> ChessPosition.colCharToInt('.'));
+        assertThrows(IllegalArgumentException.class, () -> ChessPosition.rankCharToRank('s'));
+        assertThrows(IllegalArgumentException.class, () -> ChessPosition.rankCharToRank('1'));
+        assertThrows(IllegalArgumentException.class, () -> ChessPosition.rankCharToRank('z'));
+        assertThrows(IllegalArgumentException.class, () -> ChessPosition.rankCharToRank('.'));
 
     }
 
@@ -39,7 +39,7 @@ class ChessPositionTest {
 
         for (int i = 0; i < values.length; i++) {
             ChessPosition position = new ChessPosition(inputs[i], 1);
-            assertEquals(values[i], position.getRow());
+            assertEquals(values[i], position.getRank());
         }
     }
 
@@ -50,7 +50,7 @@ class ChessPositionTest {
 
         for (int i = 0; i < values.length; i++) {
             ChessPosition position = new ChessPosition(1, inputs[i]);
-            assertEquals(values[i], position.getColChar());
+            assertEquals(values[i], position.getFileChar());
         }
     }
 
@@ -74,18 +74,21 @@ class ChessPositionTest {
 
         for (int i = 0; i < values.length; i++) {
             ChessPosition position = new ChessPosition(1, inputs[i]);
-            assertEquals(values[i], position.getCol());
+            assertEquals(values[i], position.getFile(), inputs[i]);
         }
     }
 
     @Test
     void equals() {
         ChessPosition position = new ChessPosition("a8");
-        ChessPosition position1 = new ChessPosition(0, 0);
-        ChessPosition position2 = new ChessPosition(0, 1);
+        ChessPosition position1 = new ChessPosition(0, 7);
+        ChessPosition position2 = new ChessPosition(1, 0);
+        ChessPosition position3 = new ChessPosition("b1");
 
+        assertEquals(new ChessPosition(0, 0), new ChessPosition("a1"), "Equals equivalent position object");
         assertEquals(position1, position, "Equals equivalent position object");
         assertEquals(position, position1, "Equals equivalent position object");
+        assertEquals(position2, position3, "Equals equivalent position object");
 
         assertEquals(position, position, "Equals itself");
         assertEquals(position1, position1, "Equals itself");

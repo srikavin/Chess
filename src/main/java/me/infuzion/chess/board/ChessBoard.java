@@ -1,77 +1,30 @@
 package me.infuzion.chess.board;
 
-import me.infuzion.chess.piece.*;
+import me.infuzion.chess.piece.ChessPiece;
+import me.infuzion.chess.piece.Color;
+import me.infuzion.chess.piece.King;
+import me.infuzion.chess.piece.PieceType;
 import me.infuzion.chess.util.PGNParser;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringJoiner;
 
 import static me.infuzion.chess.piece.Color.BLACK;
 import static me.infuzion.chess.piece.Color.WHITE;
 import static me.infuzion.chess.piece.PieceType.*;
 
 public class ChessBoard {
+    private final List<ChessMove> moves = new ArrayList<>();
 
-    private final Color[][] boardColors;
-    private final List<String> moves = new ArrayList<>();
     private final BoardData data;
+    private Color currentTurn = WHITE;
+    private int halfMoveClock = 0;
 
-    public ChessBoard(PieceType[][] pieceTypes, Color[][] boardColor, Color[][] pieceColors) {
-        if (pieceTypes.length == 8 && boardColor.length == 8) {
-            for (Color[] e : boardColor) {
-                if (e.length != 8) {
-                    throw new RuntimeException("Invalid input array.");
-                }
-            }
-        } else {
-            throw new RuntimeException("Invalid input array.");
-        }
-        this.boardColors = boardColor;
-        ChessPiece[][] pieces = new ChessPiece[8][8];
-        for (int i = 0; i < 8; i++) {
-            PieceType[] curTypes = pieceTypes[i];
-            Color[] curColors = pieceColors[i];
-            if (curTypes.length != curColors.length) {
-                throw new RuntimeException("Input arrays are not equal in length!");
-            }
-            for (int j = 0; j < 8; j++) {
-                ChessPiece piece;
-                ChessPosition curPosition = new ChessPosition(i, j);
-                if (curTypes.length < 8) {
-                    pieces[j][i] = null;
-                    continue;
-                }
-                switch (curTypes[j]) {
-                    case BISHOP:
-                        piece = new Bishop(curColors[j], curPosition);
-                        break;
-                    case KING:
-                        piece = new King(curColors[j], curPosition);
-                        break;
-                    case KNIGHT:
-                        piece = new Knight(curColors[j], curPosition);
-                        break;
-                    case PAWN:
-                        piece = new Pawn(curColors[j], curPosition);
-                        break;
-                    case QUEEN:
-                        piece = new Queen(curColors[j], curPosition);
-                        break;
-                    case ROOK:
-                        piece = new Rook(curColors[j], curPosition);
-                        break;
-                    default:
-                        if (curTypes[j] == null) {
-                            piece = null;
-                            break;
-                        }
-                        throw new RuntimeException(
-                                "Unknown input piece type: " + curTypes[i].name());
-                }
-                pieces[j][i] = piece;
-            }
-        }
-        data = new BoardData(pieces);
+    public ChessBoard(BoardData data) {
+        this.data = data;
     }
 
     private static ChessBoard getChessBoard() {
@@ -85,16 +38,6 @@ public class ChessBoard {
                 {PAWN, PAWN, PAWN, PAWN, PAWN, PAWN, PAWN, PAWN},
                 {ROOK, KNIGHT, BISHOP, QUEEN, KING, BISHOP, KNIGHT, ROOK}
         };
-        final Color[][] boardColor = {
-                {WHITE, BLACK, WHITE, BLACK, WHITE, BLACK, WHITE, BLACK},
-                {BLACK, WHITE, BLACK, WHITE, BLACK, WHITE, BLACK, WHITE},
-                {WHITE, BLACK, WHITE, BLACK, WHITE, BLACK, WHITE, BLACK},
-                {BLACK, WHITE, BLACK, WHITE, BLACK, WHITE, BLACK, WHITE},
-                {WHITE, BLACK, WHITE, BLACK, WHITE, BLACK, WHITE, BLACK},
-                {BLACK, WHITE, BLACK, WHITE, BLACK, WHITE, BLACK, WHITE},
-                {WHITE, BLACK, WHITE, BLACK, WHITE, BLACK, WHITE, BLACK},
-                {BLACK, WHITE, BLACK, WHITE, BLACK, WHITE, BLACK, WHITE},
-        };
         final Color[][] pieceColors = {
                 {BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK},
                 {BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK, BLACK},
@@ -105,23 +48,36 @@ public class ChessBoard {
                 {WHITE, WHITE, WHITE, WHITE, WHITE, WHITE, WHITE, WHITE},
                 {WHITE, WHITE, WHITE, WHITE, WHITE, WHITE, WHITE, WHITE}
         };
-        return new ChessBoard(pieces, boardColor, pieceColors);
+        return new ChessBoard(BoardData.fromPieceTypes(pieces, pieceColors));
     }
 
     public static ChessBoard getDefaultBoard() {
         return getChessBoard();
     }
 
-    public static boolean isUnderCheck(Color side, BoardData data) {
-        return isUnderCheck(side, data.getPieces());
+    public static boolean isUnderCheck(@NotNull Color side, BoardData data) {
+        King king = getKing(side, data.getPieces());
+        return king != null && canPieceAttack(king.currentPosition(), data, side.invert());
     }
 
-    public static boolean isUnderCheck(Color side, ChessPiece[][] pieces) {
-        King king = getKing(side, pieces);
-        return king != null && piecesThatCanMoveTo(king.currentPosition(), new BoardData(pieces), getOppositeColor(side)).size() > 0;
+    public static boolean canPieceAttack(@NotNull ChessPosition position, @NotNull BoardData data, @NotNull Color color) {
+        for (ChessPiece[] pieceArr : data.getPieces()) {
+            for (ChessPiece piece : pieceArr) {
+                if (piece == null) {
+                    continue;
+                }
+                if (piece.getColor() == color) {
+                    if (piece.isMoveAllowedIgnoringCheck(data, new ChessMove(piece.currentPosition(), position), true)) {
+                        System.out.println(position.toString() + piece.currentPosition());
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
-    public static List<ChessPiece> piecesThatCanMoveTo(ChessPosition position, BoardData data, Color color) {
+    public static List<ChessPiece> piecesThatCanMoveTo(ChessPosition position, BoardData data, @Nullable Color color) {
         boolean skipColor = color == null;
         List<ChessPiece> piecesToRet = new ArrayList<>();
         for (ChessPiece[] pieceArr : data.getPieces()) {
@@ -130,13 +86,25 @@ public class ChessBoard {
                     continue;
                 }
                 if (skipColor || piece.getColor() == color) {
-                    if (piece.allowed(data, position, true)) {
+                    if (piece.isMoveAllowedIgnoringCheck(data, new ChessMove(piece.currentPosition(), position), true)) {
                         piecesToRet.add(piece);
                     }
                 }
             }
         }
         return piecesToRet;
+    }
+
+    public static boolean isUnderCheckAfterMove(@NotNull BoardData data, @NotNull Color side, @NotNull ChessMove move) {
+        ChessPosition start = move.getSource();
+        ChessPosition end = move.getEnd();
+
+        ChessPiece piece = data.getPiece(start).clone();
+
+        ChessBoard clone = new ChessBoard(new BoardData(data));
+        piece.executeMoveWithoutValidation(clone, move);
+        piece.setPosition(end);
+        return isUnderCheck(side, clone.data);
     }
 
     private static King getKing(Color color, ChessPiece[][] pieces) {
@@ -153,130 +121,118 @@ public class ChessBoard {
         return null;
     }
 
-    private static Color getOppositeColor(Color color) {
-        if (color == WHITE) {
-            return BLACK;
-        }
-        if (color == BLACK) {
-            return WHITE;
-        }
-        return null;
-
-    }
-
     public static ChessBoard fromPGNString(String pgn) {
         ChessBoard board = getDefaultBoard();
         PGNParser.executeMoves(board, pgn, WHITE);
         return board;
     }
 
-    public static boolean checkAfterMove(BoardData data, Color side, ChessPosition start,
-                                         ChessPosition end) {
+    public static ChessBoard fromFen(String fen) {
+        String[] split = fen.split(" ", 6);
 
-        ChessPiece piece = data.getPiece(start).clone();
-        ChessPiece[][] pieceClone = data.getPieces();
-        pieceClone[start.getCol()][start.getRow()] = null;
-        piece.setPosition(end);
-        pieceClone[end.getCol()][end.getRow()] = piece;
-        return isUnderCheck(side, pieceClone);
-    }
+        if (split.length != 6) {
+            throw new IllegalArgumentException("invalid fen");
+        }
 
-    public static void main(String[] a) {
-        System.out.println(ChessBoard.getDefaultBoard().toFen());
-    }
 
-    public String toFen() {
-        StringBuilder builder = new StringBuilder();
-        ChessPiece[][] pieces = data.getPieces();
-        for (int i = 0; i < pieces.length; i++) {
-            int counter = 0;
-            for (int j = 0; j < pieces[i].length; j++) {
-                ChessPiece piece = pieces[j][i];
-                if (piece == null) {
-                    counter++;
+        final PieceType[][] pieces = new PieceType[8][8];
+        final Color[][] pieceColors = new Color[8][8];
+
+        String[] fenPieces = split[0].split("/");
+
+        for (int i = 0; i < 8; i++) {
+            String fenRank = fenPieces[i];
+
+            int count = 0;
+            for (int j = 0; count < 8; j++, count++) {
+                char cur = fenRank.charAt(j);
+                if (Character.isDigit(cur)) {
+                    count += Character.getNumericValue(cur);
                     continue;
                 }
-                if (counter > 0) {
-                    builder.append(counter);
-                    counter = 0;
-                }
-                char abbr = piece.getType().getAbbreviation();
-                char p = piece.getColor() == WHITE ? Character.toUpperCase(abbr) : Character.toLowerCase(abbr);
-                builder.append(p);
+                pieceColors[i][j] = Character.isUpperCase(cur) ? WHITE : BLACK;
+                pieces[i][j] = PieceType.fromAbbreviation(cur);
             }
-            if (counter == 8) {
-                builder.append(counter);
-            }
-            builder.append('/');
         }
-        return builder.deleteCharAt(builder.lastIndexOf("/")).toString();
+
+        BoardData data = BoardData.fromPieceTypes(pieces, pieceColors);
+
+        data.setCastlingAvailabilityFromFenString(split[2]);
+        data.setEnPassantSquare(split[3].equals("-") ? null : new ChessPosition(split[3]));
+
+        ChessBoard board = new ChessBoard(data);
+
+        board.currentTurn = split[1].equals("w") ? WHITE : BLACK;
+        board.halfMoveClock = Integer.parseInt(split[4]);
+
+        return board;
+    }
+
+    public static ChessBoard fromInitialFen(String fen, List<ChessMove> moves) {
+        ChessBoard board = ChessBoard.fromFen(fen);
+
+        for (ChessMove move : moves) {
+            if (!board.move(move)) {
+                throw new IllegalArgumentException("invalid move list");
+            }
+        }
+
+        return board;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(fromInitialFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", List.of(new ChessMove("e2", "e4"))));
+
+    }
+
+    public int getCurrentPly() {
+        return moves.size();
     }
 
     public BoardData getData() {
         return data;
     }
 
-    public boolean isUnderCheck(Color side) {
-        return isUnderCheck(side, data.getPieces());
-    }
+    public boolean move(ChessMove move) {
+        ChessPiece from = data.getPiece(move.getSource());
+        ChessPiece to = data.getPiece(move.getSource());
 
-    public Color[][] getBoardColors() {
-        return boardColors;
-    }
-
-    public void move(ChessPiece piece, ChessPosition start, ChessPosition end) {
-        char abr = piece.getType().getAbbreviation();
-        List<ChessPiece> movable = piecesThatCanMoveTo(end, data, piece.getColor());
-        boolean ambiguous;
-
-        if (movable.size() == 0) {
-            throw new RuntimeException("INVALID MOVE");
+        if (from == null) {
+            return false;
         }
 
-        if (movable.size() == 1) {
-            ambiguous = false;
-        } else {
-            int counter = 0;
-            for (ChessPiece e : movable) {
-                if (e.getType() == piece.getType()) {
-                    counter++;
-                }
-            }
-            ambiguous = counter > 1;
+        boolean valid = from.move(this, move);
+
+        if (!valid) {
+            return false;
         }
-        moves.add(generateAlgebraicNotation(abr, start, end, ambiguous));
+
+        halfMoveClock++;
+
+        // if move is capture or pawn move, reset half move clock
+        if (from.getType() == PAWN || to != null) {
+            halfMoveClock = 0;
+        }
+
+        return true;
     }
 
-    /**
-     * @param move Move in algebraic notation
-     * @return Whether or not the move was executed successfully
-     */
-    public boolean executeMove(String move, Color color) {
-        return PGNParser.executeMove(this, move, color);
-    }
-
-    //
-    private String generateAlgebraicNotation(char abbr, ChessPosition start,
-                                             ChessPosition end, boolean ambiguous) {
-        String capt = data.getPiece(end) != null ? "x" : "";
-
-        if (!ambiguous) {
-            return abbr + capt + end.getPosition();
-        } else {
-            return abbr + start.getPosition() + capt + end.getPosition();
-        }
+    public void recordMove(ChessMove move) {
+        moves.add(move);
+        currentTurn = currentTurn.invert();
     }
 
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < 8; i++) {
+        for (int i = 7; i >= 0; i--) {
             for (int j = 0; j < 8; j++) {
-                ChessPiece piece = data.getPiece(i, j);
+                ChessPiece piece = data.getPiece(j, i);
                 if (piece == null) {
                     builder.append(' ');
                 } else {
-                    builder.append(data.getPiece(i, j).getType().getAbbreviation());
+                    char abbr = piece.getType().getAbbreviation();
+                    builder.append(piece.getColor() == WHITE ? Character.toUpperCase(abbr) : Character.toLowerCase(abbr));
                 }
                 builder.append(' ');
             }
@@ -285,20 +241,41 @@ public class ChessBoard {
         return builder.toString();
     }
 
-    public String toPGNString() {
-        StringBuilder builder = new StringBuilder();
-        int count = 1;
-        boolean writing = false;
-        for (String move : moves) {
-            if (!writing) {
-                builder.append(count).append(". ").append(move);
-                writing = true;
-            } else {
-                builder.append(' ').append(move).append(' ');
-                writing = false;
-                count++;
+    public String toFen() {
+        StringJoiner joiner = new StringJoiner("/");
+        for (int i = data.getPieces().length - 1; i >= 0; i--) {
+            ChessPiece[] rank = data.getPieces()[i];
+            StringBuilder builder = new StringBuilder();
+            int counter = 0;
+
+            for (ChessPiece piece : rank) {
+                if (piece == null) {
+                    counter++;
+                    continue;
+                }
+
+                if (counter != 0) {
+                    builder.append(counter);
+                    counter = 0;
+                }
+
+                char abbr = piece.getType().getAbbreviation();
+                char p = piece.getColor() == WHITE ? Character.toUpperCase(abbr) : Character.toLowerCase(abbr);
+                builder.append(p);
             }
+
+            if (counter != 0) {
+                builder.append(counter);
+            }
+
+            joiner.add(builder.toString());
         }
-        return builder.toString();
+
+        String pieces = joiner.toString();
+        String activeColor = currentTurn == WHITE ? "w" : "b";
+        String castlingAvailability = data.getCastlingAvailabilityAsFenString();
+        String enPassantTarget = data.getEnPassantSquare() == null ? "-" : data.getEnPassantSquare().getPosition();
+
+        return String.format("%s %s %s %s %d %d", pieces, activeColor, castlingAvailability, enPassantTarget, halfMoveClock, (moves.size() / 2) + 1);
     }
 }
