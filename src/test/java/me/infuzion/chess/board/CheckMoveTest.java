@@ -36,4 +36,11 @@ public class CheckMoveTest {
         board = ChessBoard.fromFen("rn1P1b1r/p3k3/7n/B7/3p4/7p/PPP1P2P/R2QK2R w KQ - 0 18");
         assertTrue(board.move(new ChessMove("h1", "f1")));
     }
+
+    @Test
+    void checkOpponent() {
+        ChessBoard board = ChessBoard.fromFen("r6r/p6P/3K4/8/3k4/8/B7/R6R w - - 57 73");
+
+        assertTrue(board.move(new ChessMove("h1", "d1")));
+    }
 }
