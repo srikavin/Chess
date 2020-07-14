@@ -144,14 +144,15 @@ public class ChessBoard {
             String fenRank = fenPieces[i];
 
             int count = 0;
-            for (int j = 0; count < 8; j++, count++) {
+            for (int j = 0; count < 8; j++) {
                 char cur = fenRank.charAt(j);
                 if (Character.isDigit(cur)) {
                     count += Character.getNumericValue(cur);
                     continue;
                 }
-                pieceColors[i][j] = Character.isUpperCase(cur) ? WHITE : BLACK;
-                pieces[i][j] = PieceType.fromAbbreviation(cur);
+                pieceColors[i][count] = Character.isUpperCase(cur) ? WHITE : BLACK;
+                pieces[i][count] = PieceType.fromAbbreviation(cur);
+                count++;
             }
         }
 
@@ -195,7 +196,7 @@ public class ChessBoard {
 
     public boolean move(ChessMove move) {
         ChessPiece from = data.getPiece(move.getSource());
-        ChessPiece to = data.getPiece(move.getSource());
+        ChessPiece to = data.getPiece(move.getEnd());
 
         if (from == null) {
             return false;

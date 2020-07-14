@@ -18,7 +18,8 @@ class RookTest {
     @Test
     void allowed() {
         Rook rook = new Rook(Color.WHITE, new ChessPosition("e3"));
-        BoardData def = ChessBoard.getDefaultBoard().getData();
+        ChessBoard board = ChessBoard.getDefaultBoard();
+        BoardData def = board.getData();
 
         def.setPiece(rook.currentPosition(), rook);
 
@@ -33,6 +34,10 @@ class RookTest {
         assertFalse(rook.allowed(def, new ChessPosition("a8")));
         assertFalse(rook.allowed(def, new ChessPosition("a1")));
         assertFalse(rook.allowed(def, new ChessPosition("f7")));
+
+        def.setPiece(new ChessPosition("g3"), new Pawn(Color.WHITE, new ChessPosition("g3")));
+
+        assertFalse(rook.allowed(def, new ChessPosition("h3")));
     }
 
 }

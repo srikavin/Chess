@@ -56,8 +56,7 @@ public class King extends ChessPiece {
     }
 
     private boolean isEmptyAndSafe(ChessPosition position, BoardData data, Color color) {
-        System.out.println("1 " + ChessBoard.canPieceAttack(position, data, color.invert()));
-        return data.getPiece(position) == null && !ChessBoard.canPieceAttack(position, data, color.invert());
+         return data.getPiece(position) == null && !ChessBoard.canPieceAttack(position, data, color.invert());
     }
 
     private boolean isValidCastleMove(BoardData data, ChessMove move) {
