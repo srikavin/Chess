@@ -52,8 +52,29 @@ public class RequireAuthenticationPredicate implements EventPredicate<RequiresAu
         this.authenticationHelper = new ChessAuthenticationHelper(tokenHandler);
     }
 
-    @Override
-    public boolean shouldCall(RequiresAuthentication annotation, HasBody event) {
+    private boolean checkRequest(RequiresAuthentication annotation, HasBody event) {
+        if (annotation.value() != AuthenticationChecks.REQUEST) {
+            return true;
+        }
+
+        BodyData.BodyField field = event.getBodyData().getFields().get("request");
+
+        if (field == null) {
+            return false;
+        }
+
+        String request = typeConverter.deserialize(field.getContent(), String.class);
+
+        if (request.equalsIgnoreCase(annotation.request())) {
+            return true;
+        }
+
+        // don't send auth failed message for unknown requests
+        preventSendAuthFailedMessage.add(event);
+        return false;
+    }
+
+    private boolean checkLogin(RequiresAuthentication annotation, HasBody event) {
         if (!annotation.requireLoggedIn()) {
             preventSendAuthFailedMessage.add(event);
             return true;
@@ -61,29 +82,17 @@ public class RequireAuthenticationPredicate implements EventPredicate<RequiresAu
 
         User user = authenticationHelper.getUser(event);
 
-        if (user == null) {
-            System.out.println(1);
-            return false;
+        return user != null;
+    }
+
+    @Override
+    public boolean shouldCall(RequiresAuthentication annotation, HasBody event) {
+        if (checkLogin(annotation, event) && checkRequest(annotation, event)) {
+            preventSendAuthFailedMessage.add(event);
+            return true;
         }
 
-        if (annotation.value() == AuthenticationChecks.REQUEST) {
-            BodyData.BodyField field = event.getBodyData().getFields().get("request");
-
-            if (field == null) {
-                System.out.println(2);
-                return false;
-            }
-
-            if (typeConverter.deserialize(field.getContent(), String.class).equals(annotation.request())) {
-                preventSendAuthFailedMessage.add(event);
-                return true;
-            }
-            System.out.println(4);
-            return false;
-        }
-
-        preventSendAuthFailedMessage.add(event);
-        return true;
+        return false;
     }
 
     @Override

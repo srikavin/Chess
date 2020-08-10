@@ -22,10 +22,7 @@ import me.infuzion.chess.web.dao.impl.MatchDatabase;
 import me.infuzion.chess.web.dao.impl.UserDatabase;
 import me.infuzion.chess.web.domain.Game;
 import me.infuzion.chess.web.domain.GamePreviewGenerator;
-import me.infuzion.chess.web.domain.User;
 import me.infuzion.chess.web.domain.service.GameService;
-import me.infuzion.chess.web.event.helper.RequestUser;
-import me.infuzion.chess.web.event.helper.RequiresAuthentication;
 import me.infuzion.chess.web.record.RecordSet;
 import me.infuzion.web.server.EventListener;
 import me.infuzion.web.server.event.def.PageRequestEvent;
@@ -34,7 +31,6 @@ import me.infuzion.web.server.event.reflect.Route;
 import me.infuzion.web.server.event.reflect.param.mapper.impl.QueryParam;
 import me.infuzion.web.server.event.reflect.param.mapper.impl.Response;
 import me.infuzion.web.server.event.reflect.param.mapper.impl.UrlParam;
-import me.infuzion.web.server.router.RouteMethod;
 import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
@@ -63,12 +59,17 @@ public class ChessGameListener implements EventListener {
     @EventHandler
     @Route("/api/v1/games/")
     @Response("application/json")
-    public List<Game> multipleGames(PageRequestEvent event, @QueryParam("limit") Integer limit) {
+    public List<Game> multipleGames(PageRequestEvent event, @QueryParam("limit") Integer limit, @QueryParam("user") String user) {
+
         if (limit == null) {
             limit = 100;
         }
 
-        return recordSet.get(limit);
+        if (user != null) {
+            return gameService.getRecentGameForUser(new Identifier(user), limit);
+        }
+
+        return gameService.getActiveGames(limit);
     }
 
     @EventHandler(PageRequestEvent.class)
@@ -93,21 +94,5 @@ public class ChessGameListener implements EventListener {
     @Response("application/json")
     private Game singleGame(@UrlParam("game_id") String game_id) {
         return gameService.getGame(new Identifier(game_id));
-    }
-
-    @EventHandler(PageRequestEvent.class)
-    @Route(value = "/api/v1/games/", methods = RouteMethod.POST)
-    @Response("application/json")
-    @RequiresAuthentication
-    public JsonObject createGame(@RequestUser User user) {
-//        Game created = new Game(new Identifier(), Variants.STANDARD_FEN, Visibility.PUBLIC);
-//        created.addPlayer(user.getIdentifier());
-//
-//        matchDatabase.addMatch(created);
-//
-//        JsonObject response = new JsonObject();
-//        response.addProperty("created", created.getGameID().getId());
-
-        return null;
     }
 }

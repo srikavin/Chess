@@ -70,6 +70,9 @@ public class ChessUserAuthenticationListener implements EventListener {
     @Response("application/json")
     public JsonObject getUserByUsername(PageRequestEvent event, @QueryParam("username") String username) {
         User user = userDao.getUser(username);
+        if (user == null) {
+            return new JsonObject();
+        }
         return user.toJson();
     }
 
@@ -82,7 +85,7 @@ public class ChessUserAuthenticationListener implements EventListener {
             object.addProperty("username", user.getUsername());
             object.addProperty("token", token.getId());
         } else {
-            object.addProperty("error", "user not found");
+            object.addProperty("error", "incorrect username or password");
         }
         return object;
     }

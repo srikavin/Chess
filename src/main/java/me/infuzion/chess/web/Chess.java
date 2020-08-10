@@ -65,7 +65,6 @@ public class Chess implements EventListener {
         manager.registerAnnotation(RequiresAuthentication.class, new RequireAuthenticationPredicate(handler));
         manager.registerAnnotation(RequestUser.class, new RequestUserParamMapper(handler));
 
-        manager.registerListener(this);
         manager.registerListener(new ChessAuthenticationHelper(handler));
         manager.registerListener(new ChessUserAuthenticationListener(userDatabase, handler));
         manager.registerListener(new ChessMoveListener(gameService, manager));
@@ -76,6 +75,7 @@ public class Chess implements EventListener {
             @EventHandler()
             private void test(PageRequestEvent event) {
                 event.setResponseHeader("Access-Control-Allow-Origin", "*");
+                event.setResponseHeader("Access-Control-Allow-Headers", "*");
             }
         });
 

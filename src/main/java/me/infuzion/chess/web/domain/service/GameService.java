@@ -25,6 +25,7 @@ import me.infuzion.chess.web.domain.GameStatus;
 import org.jetbrains.annotations.NotNull;
 
 import java.security.SecureRandom;
+import java.util.List;
 
 public class GameService {
     private final MatchDao matchDao;
@@ -49,6 +50,14 @@ public class GameService {
 
     public Game getGame(@NotNull Identifier identifier) {
         return matchDao.getMatch(identifier);
+    }
+
+    public List<Game> getRecentGameForUser(@NotNull Identifier user, int limit) {
+        return matchDao.getRecentMatchesForUser(user, limit);
+    }
+
+    public List<Game> getActiveGames(int limit) {
+        return matchDao.getMatches(limit);
     }
 
     /**

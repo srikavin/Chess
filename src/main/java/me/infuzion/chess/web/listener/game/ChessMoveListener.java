@@ -45,7 +45,9 @@ public class ChessMoveListener implements EventListener {
     private final GameService gameService;
     private final EventManager eventManager;
     private final Map<Identifier, WebsocketRoom> gameListeners = new ConcurrentHashMap<>();
-    int count = 0;
+    private final Object genericSuccess = new Object() {
+        final String status = "success";
+    };
 
     public ChessMoveListener(GameService service, EventManager eventManager) {
         gameService = service;
@@ -62,41 +64,39 @@ public class ChessMoveListener implements EventListener {
         if (gameService.addPlayerToGame(gameId, user.getIdentifier())) {
             gameListeners.computeIfAbsent(gameId, (gId) -> new WebsocketRoom(eventManager))
                     .sendToAll(gson.toJson(new JoinResponse(gameId, user.getIdentifier())));
-        } else {
-            return new JoinResponse("failed to join game");
         }
 
-        return null;
+        return new JoinResponse("failed to join game");
     }
 
     @EventHandler
     @RequiresAuthentication(value = AuthenticationChecks.REQUEST, request = "listen", requireLoggedIn = false)
     @Route("/api/v1/games/")
-    private void onListenRequest(WebSocketTextMessageEvent event, @BodyParam("id") String id) {
+    private Object onListenRequest(WebSocketTextMessageEvent event, @BodyParam("id") String id) {
         Identifier gameId = new Identifier(id);
 
         if (gameService.getGame(gameId) != null) {
             gameListeners.computeIfAbsent(gameId, (gId) -> new WebsocketRoom(eventManager));
             WebsocketRoom room = gameListeners.get(gameId);
             room.addClient(event.getClient());
-            System.out.println("sendToAll " + this.hashCode() + " hashcode " + room.hashCode());
         }
 
-        System.out.println("called " + count++);
+        return genericSuccess;
     }
 
     @EventHandler
     @RequiresAuthentication(value = AuthenticationChecks.REQUEST, request = "stop_listen", requireLoggedIn = false)
     @Route("/api/v1/games/")
-    private void onStopListenRequest(WebSocketTextMessageEvent event, @BodyParam("id") String id) {
+    private Object onStopListenRequest(WebSocketTextMessageEvent event, @BodyParam("id") String id) {
         Identifier gameId = new Identifier(id);
 
         if (gameService.getGame(gameId) != null) {
             gameListeners.computeIfAbsent(gameId, (gId) -> new WebsocketRoom(eventManager));
-            System.out.println("removing ");
-//            WebsocketRoom room = gameListeners.get(gameId);
-//            room.removeClient(event.getClient());
+            WebsocketRoom room = gameListeners.get(gameId);
+            room.removeClient(event.getClient());
         }
+
+        return genericSuccess;
     }
 
     @EventHandler

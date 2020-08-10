@@ -75,7 +75,7 @@ public class UserDatabase extends Database implements UserDao {
             return null;
         }
 
-        return DBHelper.prepareStatement(source, "INSERT INTO USERS(ID, USERNAME, PASSWORD, LAST_LOGIN) VALUES (?, ?, ?, ?)", ps -> {
+        return DBHelper.prepareStatement(source, "INSERT INTO USERS(ID, USERNAME, PASSWORD, LAST_LOGIN) VALUES (?, ?, ?, ?) ON CONFLICT DO NOTHING", ps -> {
             String hashed = BCrypt.hashpw(password, BCrypt.gensalt(12));
             ps.setString(1, id.getId());
             ps.setString(2, username);
