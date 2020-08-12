@@ -17,8 +17,8 @@
 package me.infuzion.chess.web.event.helper;
 
 import com.google.common.flogger.FluentLogger;
-import me.infuzion.chess.web.TokenHandler;
 import me.infuzion.chess.web.domain.User;
+import me.infuzion.chess.web.domain.service.TokenService;
 import me.infuzion.chess.web.listener.ChessAuthenticationHelper;
 import me.infuzion.web.server.event.Event;
 import me.infuzion.web.server.event.reflect.param.HasBody;
@@ -30,8 +30,8 @@ public class RequestUserParamMapper implements ParamMapper<RequestUser, HasBody,
     private static final FluentLogger logger = FluentLogger.forEnclosingClass();
     private final ChessAuthenticationHelper authenticationHelper;
 
-    public RequestUserParamMapper(TokenHandler tokenHandler) {
-        this.authenticationHelper = new ChessAuthenticationHelper(tokenHandler);
+    public RequestUserParamMapper(TokenService tokenService) {
+        this.authenticationHelper = new ChessAuthenticationHelper(tokenService);
     }
 
     @Override

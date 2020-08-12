@@ -1,8 +1,8 @@
 package me.infuzion.chess.web.listener;
 
 import me.infuzion.chess.util.Identifier;
-import me.infuzion.chess.web.TokenHandler;
 import me.infuzion.chess.web.domain.User;
+import me.infuzion.chess.web.domain.service.TokenService;
 import me.infuzion.web.server.EventListener;
 import me.infuzion.web.server.event.Event;
 import me.infuzion.web.server.event.reflect.param.DefaultTypeConverter;
@@ -13,11 +13,11 @@ import me.infuzion.web.server.http.parser.BodyData;
 
 public class ChessAuthenticationHelper implements EventListener {
 
-    private final TokenHandler tokenHandler;
+    private final TokenService tokenService;
     private final TypeConverter converter = new DefaultTypeConverter();
 
-    public ChessAuthenticationHelper(TokenHandler tokenHandler) {
-        this.tokenHandler = tokenHandler;
+    public ChessAuthenticationHelper(TokenService tokenService) {
+        this.tokenService = tokenService;
     }
 
     private String checkBody(HasBody event) {
@@ -54,6 +54,6 @@ public class ChessAuthenticationHelper implements EventListener {
             return null;
         }
 
-        return tokenHandler.getUser(new Identifier(token));
+        return tokenService.getUser(new Identifier(token));
     }
 }

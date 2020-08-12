@@ -8,7 +8,6 @@ import me.infuzion.chess.util.Identifier;
 import me.infuzion.chess.web.dao.MatchDao;
 import me.infuzion.chess.web.domain.Game;
 import me.infuzion.chess.web.domain.GameStatus;
-import me.infuzion.chess.web.record.RecordSource;
 import org.jetbrains.annotations.NotNull;
 
 import javax.sql.DataSource;
@@ -17,7 +16,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
-public class MatchDatabase extends Database implements RecordSource<Game>, MatchDao {
+public class MatchDatabase extends Database implements MatchDao {
     private final DataSource source;
 
     public MatchDatabase(DataSource source) {
@@ -77,7 +76,7 @@ public class MatchDatabase extends Database implements RecordSource<Game>, Match
         Identifier id = new Identifier(rs.getString("ID"));
         String initialFen = rs.getString("INITIAL_FEN");
         String whiteIdString = rs.getString("PLAYER_WHITE");
-        String blackIdString = rs.getString("PLAYER_WHITE");
+        String blackIdString = rs.getString("PLAYER_BLACK");
         String statusName = rs.getString("STATUS_NAME");
         String currentFen = rs.getString("CURRENT_FEN");
 
@@ -99,15 +98,18 @@ public class MatchDatabase extends Database implements RecordSource<Game>, Match
                         ps.executeQuery();
                         return DBHelper.mapElements(ps.executeQuery(), this::mapResultSetWithoutMoves);
                     });
-
         });
-
     }
 
     @Override
     public List<Game> getRecentMatchesForUser(Identifier user, int limit) {
         return DBHelper.prepareStatement(source,
-                "SELECT * FROM matches WHERE matches.player_black = ? OR matches.player_white = ? LIMIT ?", ps -> {
+                "SELECT matches.ID, PLAYER_WHITE, PLAYER_BLACK, INITIAL_FEN, CURRENT_FEN, match_status.name AS STATUS_NAME " +
+                        "FROM MATCHES " +
+                        "JOIN match_status " +
+                        "ON matches.STATUS = match_status.ID " +
+                        "WHERE matches.player_white = ? OR matches.player_black = ? " +
+                        "LIMIT ?", ps -> {
                     ps.setString(1, user.getId());
                     ps.setString(2, user.getId());
                     ps.setInt(3, limit);
@@ -215,15 +217,5 @@ public class MatchDatabase extends Database implements RecordSource<Game>, Match
         });
 
         return getMatch(game.getId());
-    }
-
-    @Override
-    public List<Game> getRecords(int limit) {
-        return getMatches(limit);
-    }
-
-    @Override
-    public Game getRecord(Identifier id) {
-        return getMatch(id);
     }
 }

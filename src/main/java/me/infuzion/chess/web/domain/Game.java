@@ -16,34 +16,31 @@
 
 package me.infuzion.chess.web.domain;
 
-import com.google.gson.JsonObject;
 import me.infuzion.chess.board.ChessBoard;
 import me.infuzion.chess.board.ChessMove;
 import me.infuzion.chess.piece.Color;
 import me.infuzion.chess.util.Identifier;
 import me.infuzion.chess.web.game.Visibility;
-import me.infuzion.chess.web.record.Record;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.List;
 
-public class Game implements Record {
-
+public class Game {
     private transient final ChessBoard board;
 
     private final Identifier id;
-
     private final String initialFen;
     private final Visibility visibility;
+
     @Nullable
     private final List<@NotNull ChessMove> moves;
+
     private String currentFen;
     private Identifier playerWhite;
     private Identifier playerBlack;
     private GameStatus status;
-
     public Game(@NotNull Identifier id, @NotNull String initialFen, @NotNull List<@NotNull ChessMove> moves,
                 @Nullable Identifier playerWhite, @Nullable Identifier playerBlack, @NotNull GameStatus status) {
         this.id = id;
@@ -88,6 +85,10 @@ public class Game implements Record {
         return currentFen;
     }
 
+    public @Nullable List<ChessMove> getMoves() {
+        return moves;
+    }
+
     public void setCurrentFen(String currentFen) {
         this.currentFen = currentFen;
     }
@@ -130,20 +131,5 @@ public class Game implements Record {
 
     public Visibility getVisibility() {
         return visibility;
-    }
-
-    @Override
-    public String getName() {
-        return "game";
-    }
-
-    @Override
-    public JsonObject toJson() {
-        JsonObject toRet = new JsonObject();
-        toRet.addProperty("id", getId().getId());
-        toRet.addProperty("playerBlack", (getPlayerBlack() != null) ? getPlayerBlack().getId() : null);
-        toRet.addProperty("playerWhite", (getPlayerWhite() != null) ? getPlayerWhite().getId() : null);
-        toRet.addProperty("status", getStatus().name());
-        return toRet;
     }
 }

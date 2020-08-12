@@ -21,10 +21,14 @@ import me.infuzion.chess.board.ChessMove;
 import me.infuzion.chess.piece.Color;
 import me.infuzion.chess.util.ChessUtilities;
 import me.infuzion.chess.util.Identifier;
+import me.infuzion.chess.web.data.PubSubChannel;
+import me.infuzion.chess.web.data.PubSubMessage;
 import me.infuzion.chess.web.domain.Game;
 import me.infuzion.chess.web.domain.User;
 import me.infuzion.chess.web.domain.Variants;
 import me.infuzion.chess.web.domain.service.GameService;
+import me.infuzion.chess.web.domain.service.message.ChessGameMoveMessage;
+import me.infuzion.chess.web.domain.service.message.ChessGamePlayerJoinMessage;
 import me.infuzion.chess.web.event.helper.AuthenticationChecks;
 import me.infuzion.chess.web.event.helper.RequestUser;
 import me.infuzion.chess.web.event.helper.RequiresAuthentication;
@@ -46,6 +50,7 @@ public class ChessMoveListener implements EventListener {
     private final EventManager eventManager;
     private final Map<Identifier, WebsocketRoom> gameListeners = new ConcurrentHashMap<>();
     private final Object genericSuccess = new Object() {
+        @SuppressWarnings("unused")
         final String status = "success";
     };
 
@@ -57,16 +62,12 @@ public class ChessMoveListener implements EventListener {
     @EventHandler
     @RequiresAuthentication(value = AuthenticationChecks.REQUEST, request = "join_game")
     @Route("/api/v1/games/")
-    @Response
-    private JoinResponse onJoinRequest(WebSocketTextMessageEvent event, @RequestUser User user, @BodyParam("id") String id) {
+    private void onJoinRequest(WebSocketTextMessageEvent event, @RequestUser User user, @BodyParam("id") String id) {
         Identifier gameId = new Identifier(id);
 
-        if (gameService.addPlayerToGame(gameId, user.getIdentifier())) {
-            gameListeners.computeIfAbsent(gameId, (gId) -> new WebsocketRoom(eventManager))
-                    .sendToAll(gson.toJson(new JoinResponse(gameId, user.getIdentifier())));
+        if (!gameService.addPlayerToGame(gameId, user.getIdentifier())) {
+            event.getClient().send(ChessUtilities.gson.toJson(new JoinResponse("failed to join game")));
         }
-
-        return new JoinResponse("failed to join game");
     }
 
     @EventHandler
@@ -110,7 +111,43 @@ public class ChessMoveListener implements EventListener {
         gameListeners.put(game.getId(), room);
         room.addClient(event.getClient());
 
-        return new JoinResponse(game.getId(), user.getIdentifier());
+        return new JoinResponse(game.getId(), user.getIdentifier(), game);
+    }
+
+    @EventHandler
+    @PubSubChannel(channel = "chess.game.move")
+    private void onGameUpdateMove(PubSubMessage event, @BodyParam ChessGameMoveMessage message) {
+        Identifier gameId = message.getGameId();
+
+        WebsocketRoom room = gameListeners.get(gameId);
+
+        if (room == null) {
+            return;
+        }
+
+        Game game = gameService.getGame(gameId);
+
+        MoveResponse response = new MoveResponse(gameId, message.getPlayerId(), message.getMove(), game);
+
+        room.sendToAll(ChessUtilities.gson.toJson(response));
+    }
+
+    @EventHandler
+    @PubSubChannel(channel = "chess.game.player_join")
+    private void onGameUpdateJoin(PubSubMessage event, @BodyParam ChessGamePlayerJoinMessage message) {
+        Identifier gameId = message.getGameId();
+
+        WebsocketRoom room = gameListeners.get(gameId);
+
+        if (room == null) {
+            return;
+        }
+
+        Game game = gameService.getGame(gameId);
+
+        JoinResponse response = new JoinResponse(gameId, message.getPlayerId(), game);
+
+        room.sendToAll(ChessUtilities.gson.toJson(response));
     }
 
     @EventHandler(WebSocketTextMessageEvent.class)
@@ -118,6 +155,7 @@ public class ChessMoveListener implements EventListener {
     @RequiresAuthentication(value = AuthenticationChecks.REQUEST, request = "make_move")
     @Response
     private MoveResponse onMoveRequest(WebSocketTextMessageEvent event, @RequestUser User user, @BodyParam MoveWebsocketMessage message) {
+        System.out.println("move start " + System.currentTimeMillis());
         if (message.move.getSource() == null || message.move.getEnd() == null || message.id == null) {
             return new MoveResponse("move requires source, end, and id");
         }
@@ -130,13 +168,6 @@ public class ChessMoveListener implements EventListener {
             return new MoveResponse("game not found or invalid move");
         }
 
-        MoveResponse response = new MoveResponse(gameId, user.getIdentifier(), move, gameService.getGame(gameId));
-
-        gameListeners.computeIfAbsent(gameId, e -> new WebsocketRoom(eventManager));
-
-        WebsocketRoom room = gameListeners.get(gameId);
-        room.sendToAll(gson.toJson(response));
-
         return null;
     }
 
@@ -148,17 +179,20 @@ public class ChessMoveListener implements EventListener {
     private static class JoinResponse extends ChessWebsocketResponse {
         final String game_id;
         final String player_id;
+        final Game state;
 
-        protected JoinResponse(Identifier game_id, Identifier player_id) {
+        protected JoinResponse(Identifier game_id, Identifier player_id, Game state) {
             super("player_join");
             this.game_id = game_id.getId();
             this.player_id = player_id.getId();
+            this.state = state;
         }
 
         protected JoinResponse(String error) {
             super("player_join", error);
             game_id = null;
             player_id = null;
+            state = null;
         }
     }
 

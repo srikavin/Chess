@@ -16,14 +16,10 @@
 
 package me.infuzion.chess.web.listener.game;
 
-import com.google.gson.JsonObject;
 import me.infuzion.chess.util.Identifier;
-import me.infuzion.chess.web.dao.impl.MatchDatabase;
-import me.infuzion.chess.web.dao.impl.UserDatabase;
 import me.infuzion.chess.web.domain.Game;
 import me.infuzion.chess.web.domain.GamePreviewGenerator;
 import me.infuzion.chess.web.domain.service.GameService;
-import me.infuzion.chess.web.record.RecordSet;
 import me.infuzion.web.server.EventListener;
 import me.infuzion.web.server.event.def.PageRequestEvent;
 import me.infuzion.web.server.event.reflect.EventHandler;
@@ -37,30 +33,16 @@ import java.io.IOException;
 import java.util.List;
 
 public class ChessGameListener implements EventListener {
-    private final MatchDatabase matchDatabase;
     private final GameService gameService;
-    private final UserDatabase userDatabase;
-    private final RecordSet<Game> recordSet;
 
-    private final JsonObject invalidGameIdError;
-
-    {
-        invalidGameIdError = new JsonObject();
-        invalidGameIdError.addProperty("error", "invalid game id");
-    }
-
-    public ChessGameListener(MatchDatabase matchDatabase, GameService gameService, UserDatabase userDatabase) {
-        this.matchDatabase = matchDatabase;
+    public ChessGameListener(GameService gameService) {
         this.gameService = gameService;
-        this.userDatabase = userDatabase;
-        recordSet = new RecordSet<>("games", this.matchDatabase);
     }
 
     @EventHandler
     @Route("/api/v1/games/")
     @Response("application/json")
     public List<Game> multipleGames(PageRequestEvent event, @QueryParam("limit") Integer limit, @QueryParam("user") String user) {
-
         if (limit == null) {
             limit = 100;
         }

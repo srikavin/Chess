@@ -2,9 +2,9 @@ package me.infuzion.chess.web.listener;
 
 import com.google.gson.JsonObject;
 import me.infuzion.chess.util.Identifier;
-import me.infuzion.chess.web.TokenHandler;
 import me.infuzion.chess.web.dao.UserDao;
 import me.infuzion.chess.web.domain.User;
+import me.infuzion.chess.web.domain.service.TokenService;
 import me.infuzion.chess.web.event.helper.RequestUser;
 import me.infuzion.chess.web.event.helper.RequiresAuthentication;
 import me.infuzion.web.server.EventListener;
@@ -18,11 +18,11 @@ import me.infuzion.web.server.router.RouteMethod;
 
 public class ChessUserAuthenticationListener implements EventListener {
     private final UserDao userDao;
-    private final TokenHandler tokenHandler;
+    private final TokenService tokenService;
 
-    public ChessUserAuthenticationListener(UserDao userDao, TokenHandler tokenHandler) {
+    public ChessUserAuthenticationListener(UserDao userDao, TokenService tokenService) {
         this.userDao = userDao;
-        this.tokenHandler = tokenHandler;
+        this.tokenService = tokenService;
     }
 
     @EventHandler
@@ -77,9 +77,9 @@ public class ChessUserAuthenticationListener implements EventListener {
     }
 
     private JsonObject setSuccess(User user) {
-        Identifier token = tokenHandler.addUser(user);
         JsonObject object = new JsonObject();
         if (user != null) {
+            Identifier token = tokenService.addUser(user);
             object.addProperty("success", true);
             object.addProperty("user_id", user.getIdentifier().getId());
             object.addProperty("username", user.getUsername());

@@ -14,7 +14,12 @@
  * limitations under the License.
  */
 
-package me.infuzion.chess.web.dto;
+package me.infuzion.chess.web.data;
 
-public class UserDTO {
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
+@Retention(RetentionPolicy.RUNTIME)
+public @interface PubSubChannel {
+    String channel() default "";
 }

@@ -18,10 +18,10 @@ package me.infuzion.chess.web;
 
 import com.intuit.karate.junit5.Karate;
 import me.infuzion.web.server.Server;
-import org.junit.jupiter.api.BeforeAll;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.URISyntaxException;
 
 public class KarateIT {
     static Thread t;
@@ -36,7 +36,7 @@ public class KarateIT {
             try {
                 Server server = new Server(new InetSocketAddress("0.0.0.0", 37628));
                 new Chess(server);
-            } catch (IOException e) {
+            } catch (IOException | URISyntaxException e) {
                 e.printStackTrace();
             }
         });

@@ -20,8 +20,11 @@ import me.infuzion.chess.board.ChessMove;
 import me.infuzion.chess.piece.Color;
 import me.infuzion.chess.util.Identifier;
 import me.infuzion.chess.web.dao.MatchDao;
+import me.infuzion.chess.web.data.PubSubSource;
 import me.infuzion.chess.web.domain.Game;
 import me.infuzion.chess.web.domain.GameStatus;
+import me.infuzion.chess.web.domain.service.message.ChessGameMoveMessage;
+import me.infuzion.chess.web.domain.service.message.ChessGamePlayerJoinMessage;
 import org.jetbrains.annotations.NotNull;
 
 import java.security.SecureRandom;
@@ -29,10 +32,12 @@ import java.util.List;
 
 public class GameService {
     private final MatchDao matchDao;
+    private final PubSubSource pubSubSource;
     private final ThreadLocal<SecureRandom> randomThreadLocal = ThreadLocal.withInitial(SecureRandom::new);
 
-    public GameService(MatchDao matchDao) {
+    public GameService(MatchDao matchDao, PubSubSource pubSubSource) {
         this.matchDao = matchDao;
+        this.pubSubSource = pubSubSource;
     }
 
     /**
@@ -103,6 +108,8 @@ public class GameService {
 
         matchDao.updateMatch(game);
 
+        pubSubSource.publish("chess.game.player_join", new ChessGamePlayerJoinMessage(gameId, player));
+
         return true;
     }
 
@@ -139,8 +146,9 @@ public class GameService {
         matchDao.updateAndAddMove(game, move);
 
         long end = System.currentTimeMillis();
-        System.out.println("verify: " + (start2 - start) + " fetch: " + (start - start3) + " persist: " + (end - start2) + " total: " + (end - start));
+        System.out.println("verify: " + (start2 - start) + " fetch: " + (start - start3) + " persist: " + (end - start2) + " total: " + (end - start3));
 
+        pubSubSource.publish("chess.game.move", new ChessGameMoveMessage(game.getId(), playerId, move));
         return true;
     }
 }

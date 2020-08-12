@@ -11,6 +11,8 @@ public class ChessUtilities {
         gson = builder.enableComplexMapKeySerialization().setPrettyPrinting()
                 .registerTypeAdapter(Identifier.class,
                         (JsonSerializer<Identifier>) (src, typeOfSrc, context) -> new JsonPrimitive(src.toString())
+                ).registerTypeAdapter(Identifier.class,
+                        (JsonDeserializer<Identifier>) (json, type, context) -> new Identifier(json.getAsString())
                 ).registerTypeAdapter(ChessPosition.class,
                         (JsonSerializer<ChessPosition>) (src, typeOfSrc, context) -> new JsonPrimitive(src.getPosition())
                 ).registerTypeAdapter(ChessPosition.class,

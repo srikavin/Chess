@@ -19,8 +19,8 @@ package me.infuzion.chess.web.event.helper;
 import com.google.common.flogger.FluentLogger;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import me.infuzion.chess.web.TokenHandler;
 import me.infuzion.chess.web.domain.User;
+import me.infuzion.chess.web.domain.service.TokenService;
 import me.infuzion.chess.web.listener.ChessAuthenticationHelper;
 import me.infuzion.web.server.event.Event;
 import me.infuzion.web.server.event.reflect.param.CanSetBody;
@@ -48,8 +48,8 @@ public class RequireAuthenticationPredicate implements EventPredicate<RequiresAu
         authErrorResponse = new Gson().toJson(body);
     }
 
-    public RequireAuthenticationPredicate(TokenHandler tokenHandler) {
-        this.authenticationHelper = new ChessAuthenticationHelper(tokenHandler);
+    public RequireAuthenticationPredicate(TokenService tokenService) {
+        this.authenticationHelper = new ChessAuthenticationHelper(tokenService);
     }
 
     private boolean checkRequest(RequiresAuthentication annotation, HasBody event) {
