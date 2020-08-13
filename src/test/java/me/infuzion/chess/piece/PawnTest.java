@@ -2,6 +2,7 @@ package me.infuzion.chess.piece;
 
 import me.infuzion.chess.board.BoardData;
 import me.infuzion.chess.board.ChessBoard;
+import me.infuzion.chess.board.ChessMove;
 import me.infuzion.chess.board.ChessPosition;
 import org.junit.jupiter.api.Test;
 
@@ -101,5 +102,26 @@ class PawnTest {
 
         board.setEnPassantSquare(new ChessPosition("e3"));
         assertFalse(blackPawn.allowed(board, new ChessPosition("e3")));
+    }
+
+    @Test
+    void setsEnpassantSquare() {
+        ChessBoard board = ChessBoard.getDefaultBoard();
+        BoardData data = board.getData();
+
+        Pawn whitePawn = new Pawn(Color.WHITE, new ChessPosition("a2"));
+        Pawn blackPawn = new Pawn(Color.BLACK, new ChessPosition("h7"));
+
+        data.setPiece(blackPawn.currentPosition(), blackPawn);
+        data.setPiece(whitePawn.currentPosition(), whitePawn);
+
+        assertTrue(board.move(new ChessMove("a2", "a4")));
+        assertEquals(new ChessPosition("a3"), data.getEnPassantSquare());
+
+        assertTrue(board.move(new ChessMove("h7", "h5")));
+        assertEquals(new ChessPosition("h6"), data.getEnPassantSquare());
+
+        assertTrue(board.move(new ChessMove("a4", "a5")));
+        assertNull(data.getEnPassantSquare());
     }
 }

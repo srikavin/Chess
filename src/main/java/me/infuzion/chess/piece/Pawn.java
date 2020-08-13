@@ -12,13 +12,13 @@ public class Pawn extends ChessPiece {
 
     @Override
     protected void executeMove(ChessBoard board, ChessMove move) {
-        super.executeMove(board, move);
-
         ChessPosition position = getEnPassantSquare(board, move.getSource(), move.getEnd());
 
         if (position != null) {
             board.getData().setEnPassantSquare(position);
         }
+
+        super.executeMove(board, move);
     }
 
     private ChessPosition getEnPassantSquare(ChessBoard board, ChessPosition start, ChessPosition end) {
