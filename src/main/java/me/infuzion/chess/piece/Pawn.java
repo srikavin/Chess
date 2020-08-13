@@ -5,6 +5,8 @@ import me.infuzion.chess.board.ChessBoard;
 import me.infuzion.chess.board.ChessMove;
 import me.infuzion.chess.board.ChessPosition;
 
+import static me.infuzion.chess.piece.Color.WHITE;
+
 public class Pawn extends ChessPiece {
     public Pawn(Color color, ChessPosition position) {
         super(color, position, PieceType.PAWN);
@@ -12,19 +14,30 @@ public class Pawn extends ChessPiece {
 
     @Override
     protected void executeMove(ChessBoard board, ChessMove move) {
-        ChessPosition position = getEnPassantSquare(board, move.getSource(), move.getEnd());
+        ChessPosition enPassantSquare = board.getData().getEnPassantSquare();
+        if (move.getEnd().equals(enPassantSquare)) {
+            if (getColor() == WHITE) {
+                board.getData().setPiece(enPassantSquare.getRank(), enPassantSquare.getFile() - 1, null);
+            } else {
+                board.getData().setPiece(enPassantSquare.getRank(), enPassantSquare.getFile() + 1, null);
+            }
+            board.getData().setEnPassantSquare(null);
+        } else {
+            ChessPosition position = getEnPassantSquare(board, move.getSource(), move.getEnd());
 
-        if (position != null) {
-            board.getData().setEnPassantSquare(position);
+            if (position != null) {
+                board.getData().setEnPassantSquare(position);
+            }
         }
 
-        super.executeMove(board, move);
+        board.getData().setPiece(this.currentPosition(), null);
+        board.getData().setPiece(move.getEnd(), this);
     }
 
     private ChessPosition getEnPassantSquare(ChessBoard board, ChessPosition start, ChessPosition end) {
         int forward;
 
-        if (this.getColor() == Color.WHITE) {
+        if (this.getColor() == WHITE) {
             forward = 1;
         } else {
             forward = -1;
@@ -47,7 +60,7 @@ public class Pawn extends ChessPiece {
                 return null;
             }
 
-            boolean isFirstMove = (getColor() == Color.WHITE ? startFile == 1 : startFile == 6);
+            boolean isFirstMove = (getColor() == WHITE ? startFile == 1 : startFile == 6);
 
             // 2 squares if isFirstMove
             if (isFirstMove && startFile + 2 * forward == endFile) {
@@ -74,7 +87,7 @@ public class Pawn extends ChessPiece {
 
         int forward;
 
-        if (this.getColor() == Color.WHITE) {
+        if (this.getColor() == WHITE) {
             forward = 1;
         } else {
             forward = -1;
@@ -90,15 +103,10 @@ public class Pawn extends ChessPiece {
                 return true;
             }
 
-            boolean isFirstMove = (getColor() == Color.WHITE ? startFile == 1 : startFile == 6);
+            boolean isFirstMove = (getColor() == WHITE ? startFile == 1 : startFile == 6);
 
             // 2 squares if isFirstMove
-            if (isFirstMove && startFile + 2 * forward == endFile) {
-                data.setEnPassantSquare(new ChessPosition(endRank, endFile - forward));
-                return true;
-            }
-
-            return false;
+            return isFirstMove && startFile + 2 * forward == endFile;
         }
 
         // handle captures

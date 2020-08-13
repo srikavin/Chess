@@ -112,16 +112,35 @@ class PawnTest {
         Pawn whitePawn = new Pawn(Color.WHITE, new ChessPosition("a2"));
         Pawn blackPawn = new Pawn(Color.BLACK, new ChessPosition("h7"));
 
+        Pawn blackPawn2 = new Pawn(Color.BLACK, new ChessPosition("b4"));
+        Pawn whitePawn2 = new Pawn(Color.WHITE, new ChessPosition("g5"));
+
+
         data.setPiece(blackPawn.currentPosition(), blackPawn);
         data.setPiece(whitePawn.currentPosition(), whitePawn);
 
+        data.setPiece(blackPawn2.currentPosition(), blackPawn2);
+        data.setPiece(whitePawn2.currentPosition(), whitePawn2);
+
+        // moving pawn up two should set enpassant square
         assertTrue(board.move(new ChessMove("a2", "a4")));
         assertEquals(new ChessPosition("a3"), data.getEnPassantSquare());
 
+        // capturing through enpassant should remove the captured piece and reset the stored en passant square
+        assertTrue(board.move(new ChessMove("b4", "a3")));
+        assertNull(data.getPiece(new ChessPosition("a4")));
+        assertNull(data.getEnPassantSquare());
+
+        // move random piece
+        assertTrue(board.move(new ChessMove("e2", "e3")));
+
+        // moving black piece up two should set enpassant square
         assertTrue(board.move(new ChessMove("h7", "h5")));
         assertEquals(new ChessPosition("h6"), data.getEnPassantSquare());
 
-        assertTrue(board.move(new ChessMove("a4", "a5")));
+        // capturing through enpassant should remove the captured piece and reset the stored en passant square
+        assertTrue(board.move(new ChessMove("g5", "h6")));
+        assertNull(data.getPiece(new ChessPosition("h5")));
         assertNull(data.getEnPassantSquare());
     }
 }

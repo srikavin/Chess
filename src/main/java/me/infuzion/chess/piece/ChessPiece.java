@@ -55,7 +55,6 @@ public abstract class ChessPiece implements Cloneable {
 
     public void executeMoveWithoutValidation(ChessBoard board, ChessMove move) {
         board.recordMove(move);
-        board.getData().setEnPassantSquare(null);
         executeMove(board, move);
         this.position = move.getEnd();
     }
@@ -63,6 +62,7 @@ public abstract class ChessPiece implements Cloneable {
     protected void executeMove(ChessBoard board, ChessMove move) {
         board.getData().setPiece(position, null);
         board.getData().setPiece(move.getEnd(), this);
+        board.getData().setEnPassantSquare(null);
     }
 
     public boolean move(ChessBoard board, ChessMove move, boolean ignoreCheck) {
