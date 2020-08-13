@@ -2,6 +2,7 @@ package me.infuzion.chess.piece;
 
 import me.infuzion.chess.board.BoardData;
 import me.infuzion.chess.board.ChessBoard;
+import me.infuzion.chess.board.ChessMove;
 import me.infuzion.chess.board.ChessPosition;
 import org.junit.jupiter.api.Test;
 
@@ -38,7 +39,8 @@ class KingTest {
     @Test
     void whiteQueenSideCastling() {
         King king = new King(Color.WHITE, new ChessPosition("e1"));
-        BoardData def = ChessBoard.getDefaultBoard().getData();
+        ChessBoard board = ChessBoard.getDefaultBoard();
+        BoardData def = board.getData();
         def.setPiece(king.currentPosition(), king);
 
         assertFalse(king.allowed(def, new ChessPosition("c1")));
@@ -54,6 +56,10 @@ class KingTest {
         assertFalse(king.allowed(def, new ChessPosition("c8")));
         assertFalse(king.allowed(def, new ChessPosition("g8")));
 
+        // check rook position
+        assertTrue(board.move(new ChessMove("e1", "c1")));
+        assertEquals(PieceType.ROOK, def.getPiece(new ChessPosition("d1")).getType());
+
         def.getCastlingAvailability().remove(CastlingAvailability.WHITE_QUEEN_SIDE);
         assertFalse(king.allowed(def, new ChessPosition("c1")));
         assertFalse(king.allowed(def, new ChessPosition("g1")));
@@ -64,7 +70,8 @@ class KingTest {
     @Test
     void whiteKingSideCastling() {
         King king = new King(Color.WHITE, new ChessPosition("e1"));
-        BoardData def = ChessBoard.getDefaultBoard().getData();
+        ChessBoard board = ChessBoard.getDefaultBoard();
+        BoardData def = board.getData();
         def.setPiece(king.currentPosition(), king);
 
         assertFalse(king.allowed(def, new ChessPosition("g1")));
@@ -79,6 +86,10 @@ class KingTest {
         assertFalse(king.allowed(def, new ChessPosition("c8")));
         assertFalse(king.allowed(def, new ChessPosition("g8")));
 
+        // check rook position
+        assertTrue(board.move(new ChessMove("e1", "g1")));
+        assertEquals(PieceType.ROOK, def.getPiece(new ChessPosition("f1")).getType());
+
         def.getCastlingAvailability().remove(CastlingAvailability.WHITE_KING_SIDE);
         assertFalse(king.allowed(def, new ChessPosition("c1")));
         assertFalse(king.allowed(def, new ChessPosition("g1")));
@@ -89,7 +100,8 @@ class KingTest {
     @Test
     void blackQueenSideCastling() {
         King king = new King(Color.BLACK, new ChessPosition("e8"));
-        BoardData def = ChessBoard.getDefaultBoard().getData();
+        ChessBoard board = ChessBoard.getDefaultBoard();
+        BoardData def = board.getData();
         def.setPiece(king.currentPosition(), king);
 
         assertFalse(king.allowed(def, new ChessPosition("c8")));
@@ -105,6 +117,10 @@ class KingTest {
         assertTrue(king.allowed(def, new ChessPosition("c8")));
         assertFalse(king.allowed(def, new ChessPosition("g8")));
 
+        // check rook position
+        assertTrue(board.move(new ChessMove("e8", "c8")));
+        assertEquals(PieceType.ROOK, def.getPiece(new ChessPosition("d8")).getType());
+
         def.getCastlingAvailability().remove(CastlingAvailability.BLACK_QUEEN_SIDE);
         assertFalse(king.allowed(def, new ChessPosition("c1")));
         assertFalse(king.allowed(def, new ChessPosition("g1")));
@@ -115,7 +131,8 @@ class KingTest {
     @Test
     void blackKingSideCastling() {
         King king = new King(Color.BLACK, new ChessPosition("e8"));
-        BoardData def = ChessBoard.getDefaultBoard().getData();
+        ChessBoard board = ChessBoard.getDefaultBoard();
+        BoardData def = board.getData();
         def.setPiece(king.currentPosition(), king);
 
         assertFalse(king.allowed(def, new ChessPosition("g8")));
@@ -123,12 +140,15 @@ class KingTest {
         def.setPiece(new ChessPosition("f8"), null);
         def.setPiece(new ChessPosition("g8"), null);
 
-
         // queen side castle
         assertFalse(king.allowed(def, new ChessPosition("c1")));
         assertFalse(king.allowed(def, new ChessPosition("g1")));
         assertFalse(king.allowed(def, new ChessPosition("c8")));
         assertTrue(king.allowed(def, new ChessPosition("g8")));
+
+        // check rook position
+        assertTrue(board.move(new ChessMove("e8", "g8")));
+        assertEquals(PieceType.ROOK, def.getPiece(new ChessPosition("f8")).getType());
 
         def.getCastlingAvailability().remove(CastlingAvailability.BLACK_KING_SIDE);
         assertFalse(king.allowed(def, new ChessPosition("c1")));

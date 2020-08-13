@@ -106,6 +106,14 @@ public class BoardData {
         return getPiece(pos.getRank(), pos.getFile());
     }
 
+    public void movePieceWithoutVerification(ChessPosition start, ChessPosition end) {
+        ChessPiece piece = getPiece(start);
+        setPiece(start, null);
+
+        piece.setPosition(end);
+        setPiece(end, piece);
+    }
+
     public ChessPiece getPiece(int rank, int file) {
         return pieces[file][rank];
     }
