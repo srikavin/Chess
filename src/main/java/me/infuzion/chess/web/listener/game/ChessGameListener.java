@@ -16,7 +16,7 @@
 
 package me.infuzion.chess.web.listener.game;
 
-import me.infuzion.chess.util.Identifier;
+import me.infuzion.chess.game.util.Identifier;
 import me.infuzion.chess.web.domain.Game;
 import me.infuzion.chess.web.domain.GamePreviewGenerator;
 import me.infuzion.chess.web.domain.service.GameService;

@@ -1,10 +1,9 @@
 package me.infuzion.chess.web.dao.impl;
 
-import me.infuzion.chess.board.ChessMove;
-import me.infuzion.chess.board.ChessPosition;
-import me.infuzion.chess.piece.PieceType;
-import me.infuzion.chess.util.Database;
-import me.infuzion.chess.util.Identifier;
+import me.infuzion.chess.game.board.ChessMove;
+import me.infuzion.chess.game.board.ChessPosition;
+import me.infuzion.chess.game.piece.PieceType;
+import me.infuzion.chess.game.util.Identifier;
 import me.infuzion.chess.web.dao.MatchDao;
 import me.infuzion.chess.web.domain.Game;
 import me.infuzion.chess.web.domain.GameStatus;

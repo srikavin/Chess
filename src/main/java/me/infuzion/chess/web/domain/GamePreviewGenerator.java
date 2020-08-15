@@ -16,10 +16,10 @@
 
 package me.infuzion.chess.web.domain;
 
-import me.infuzion.chess.board.BoardData;
-import me.infuzion.chess.board.ChessBoard;
-import me.infuzion.chess.piece.ChessPiece;
-import me.infuzion.chess.piece.PieceType;
+import me.infuzion.chess.game.board.BoardData;
+import me.infuzion.chess.game.board.ChessBoard;
+import me.infuzion.chess.game.piece.ChessPiece;
+import me.infuzion.chess.game.piece.PieceType;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 
 import javax.imageio.ImageIO;
@@ -30,8 +30,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import static me.infuzion.chess.piece.Color.BLACK;
-import static me.infuzion.chess.piece.Color.WHITE;
+import static me.infuzion.chess.game.piece.Color.BLACK;
+import static me.infuzion.chess.game.piece.Color.WHITE;
 
 public class GamePreviewGenerator {
     private static final Map<String, BufferedImage> pieceToImageMap = new HashMap<>();
@@ -56,7 +56,7 @@ public class GamePreviewGenerator {
             Graphics graphics = defaultBoard.getGraphics();
 
 
-            me.infuzion.chess.piece.Color[][] boardColor = {
+            me.infuzion.chess.game.piece.Color[][] boardColor = {
                     {WHITE, BLACK, WHITE, BLACK, WHITE, BLACK, WHITE, BLACK},
                     {BLACK, WHITE, BLACK, WHITE, BLACK, WHITE, BLACK, WHITE},
                     {WHITE, BLACK, WHITE, BLACK, WHITE, BLACK, WHITE, BLACK},
@@ -69,7 +69,7 @@ public class GamePreviewGenerator {
 
             for (int i = 0; i < 8; i++) {
                 for (int j = 0; j < 8; j++) {
-                    graphics.setColor(boardColor[i][j] == me.infuzion.chess.piece.Color.WHITE ? white : black);
+                    graphics.setColor(boardColor[i][j] == me.infuzion.chess.game.piece.Color.WHITE ? white : black);
                     graphics.fillRect(i * tileSize, j * tileSize, (i + 1) * tileSize, (j + 1) * tileSize);
                 }
             }
@@ -92,7 +92,7 @@ public class GamePreviewGenerator {
                 if (current == null) {
                     continue;
                 }
-                String name = current.getColor() == me.infuzion.chess.piece.Color.WHITE ? "w" : "b";
+                String name = current.getColor() == me.infuzion.chess.game.piece.Color.WHITE ? "w" : "b";
                 name += current.getType().getAbbreviation();
                 BufferedImage pieceImage = pieceToImageMap.get(name);
                 graphics.drawImage(pieceImage, i * tileSize, (7 - j) * tileSize, null);

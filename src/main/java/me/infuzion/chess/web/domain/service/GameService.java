@@ -16,9 +16,9 @@
 
 package me.infuzion.chess.web.domain.service;
 
-import me.infuzion.chess.board.ChessMove;
-import me.infuzion.chess.piece.Color;
-import me.infuzion.chess.util.Identifier;
+import me.infuzion.chess.game.board.ChessMove;
+import me.infuzion.chess.game.piece.Color;
+import me.infuzion.chess.game.util.Identifier;
 import me.infuzion.chess.web.dao.MatchDao;
 import me.infuzion.chess.web.data.PubSubSource;
 import me.infuzion.chess.web.domain.Game;

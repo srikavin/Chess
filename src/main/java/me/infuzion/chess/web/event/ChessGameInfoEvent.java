@@ -1,6 +1,6 @@
 package me.infuzion.chess.web.event;
 
-import me.infuzion.chess.util.Identifier;
+import me.infuzion.chess.game.util.Identifier;
 import me.infuzion.web.server.event.AbstractEvent;
 import me.infuzion.web.server.event.def.PageRequestEvent;
 

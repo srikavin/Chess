@@ -1,6 +1,6 @@
 package me.infuzion.chess.web.listener;
 
-import me.infuzion.chess.util.Identifier;
+import me.infuzion.chess.game.util.Identifier;
 import me.infuzion.chess.web.domain.User;
 import me.infuzion.chess.web.domain.service.TokenService;
 import me.infuzion.web.server.EventListener;

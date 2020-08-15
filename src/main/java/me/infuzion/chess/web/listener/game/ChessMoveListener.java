@@ -17,10 +17,10 @@
 package me.infuzion.chess.web.listener.game;
 
 import com.google.gson.Gson;
-import me.infuzion.chess.board.ChessMove;
-import me.infuzion.chess.piece.Color;
-import me.infuzion.chess.util.ChessUtilities;
-import me.infuzion.chess.util.Identifier;
+import me.infuzion.chess.game.board.ChessMove;
+import me.infuzion.chess.game.piece.Color;
+import me.infuzion.chess.game.util.ChessUtilities;
+import me.infuzion.chess.game.util.Identifier;
 import me.infuzion.chess.web.data.PubSubChannel;
 import me.infuzion.chess.web.data.PubSubMessage;
 import me.infuzion.chess.web.domain.Game;

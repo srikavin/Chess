@@ -1,6 +1,6 @@
 package me.infuzion.chess.web;
 
-import me.infuzion.chess.util.ChessUtilities;
+import me.infuzion.chess.game.util.ChessUtilities;
 import me.infuzion.web.server.Server;
 import me.infuzion.web.server.event.reflect.param.DefaultTypeConverter;
 

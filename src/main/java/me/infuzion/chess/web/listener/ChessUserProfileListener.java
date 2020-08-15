@@ -1,8 +1,8 @@
 package me.infuzion.chess.web.listener;
 
 import com.google.gson.JsonObject;
-import me.infuzion.chess.util.Identifier;
-import me.infuzion.chess.util.RandomStringGenerator;
+import me.infuzion.chess.game.util.Identifier;
+import me.infuzion.chess.game.util.RandomStringGenerator;
 import me.infuzion.chess.web.dao.impl.UserDatabase;
 import me.infuzion.chess.web.domain.User;
 import me.infuzion.chess.web.event.helper.RequestUser;

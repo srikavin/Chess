@@ -17,8 +17,8 @@
 package me.infuzion.chess.web.domain;
 
 import com.google.gson.JsonObject;
-import me.infuzion.chess.util.ChessObject;
-import me.infuzion.chess.util.Identifier;
+import me.infuzion.chess.game.util.ChessObject;
+import me.infuzion.chess.game.util.Identifier;
 
 public class User extends ChessObject {
     private final String username;

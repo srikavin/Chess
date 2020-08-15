@@ -16,7 +16,7 @@
 
 package me.infuzion.chess.web.domain.service.message;
 
-import me.infuzion.chess.util.Identifier;
+import me.infuzion.chess.game.util.Identifier;
 
 public class ChessGamePlayerJoinMessage {
     private final Identifier gameId;

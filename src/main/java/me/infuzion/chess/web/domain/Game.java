@@ -16,10 +16,10 @@
 
 package me.infuzion.chess.web.domain;
 
-import me.infuzion.chess.board.ChessBoard;
-import me.infuzion.chess.board.ChessMove;
-import me.infuzion.chess.piece.Color;
-import me.infuzion.chess.util.Identifier;
+import me.infuzion.chess.game.board.ChessBoard;
+import me.infuzion.chess.game.board.ChessMove;
+import me.infuzion.chess.game.piece.Color;
+import me.infuzion.chess.game.util.Identifier;
 import me.infuzion.chess.web.game.Visibility;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

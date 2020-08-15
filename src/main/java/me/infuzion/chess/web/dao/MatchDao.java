@@ -16,8 +16,8 @@
 
 package me.infuzion.chess.web.dao;
 
-import me.infuzion.chess.board.ChessMove;
-import me.infuzion.chess.util.Identifier;
+import me.infuzion.chess.game.board.ChessMove;
+import me.infuzion.chess.game.util.Identifier;
 import me.infuzion.chess.web.domain.Game;
 
 import java.util.List;

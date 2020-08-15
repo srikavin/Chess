@@ -2,7 +2,7 @@ package me.infuzion.chess.web;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import me.infuzion.chess.util.ChessUtilities;
+import me.infuzion.chess.game.util.ChessUtilities;
 import me.infuzion.chess.web.dao.impl.MatchDatabase;
 import me.infuzion.chess.web.dao.impl.UserDatabase;
 import me.infuzion.chess.web.data.PubSubChannel;

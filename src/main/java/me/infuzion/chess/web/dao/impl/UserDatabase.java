@@ -16,8 +16,7 @@
 
 package me.infuzion.chess.web.dao.impl;
 
-import me.infuzion.chess.util.Database;
-import me.infuzion.chess.util.Identifier;
+import me.infuzion.chess.game.util.Identifier;
 import me.infuzion.chess.web.dao.UserDao;
 import me.infuzion.chess.web.domain.User;
 import org.jetbrains.annotations.NotNull;

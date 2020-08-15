@@ -14,24 +14,16 @@
  * limitations under the License.
  */
 
-package me.infuzion.chess.web.dao;
+package me.infuzion.chess.web.dao.impl;
 
-import me.infuzion.chess.game.util.Identifier;
-import me.infuzion.chess.web.domain.User;
-import org.jetbrains.annotations.Nullable;
-
-public interface UserDao {
-    @Nullable
-    User getUser(Identifier id);
-
-    @Nullable
-    User getUser(String username);
-
-    @Nullable
-    User checkLoginAndGetUser(String username, String password);
-
-    @Nullable
-    User createUser(Identifier id, String username, String password);
-
-    void deleteUser(Identifier identifier);
+public abstract class Database {
+    static {
+        try {
+            Class.forName("org.postgresql.Driver");
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("Failed to load Postgres JDBC");
+            System.exit(-1);
+        }
+    }
 }
