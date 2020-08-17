@@ -14,41 +14,25 @@
  * limitations under the License.
  */
 
-package me.infuzion.chess.web.domain.service.message;
+package me.infuzion.chess.clock;
 
-import me.infuzion.chess.game.board.ChessMove;
 import me.infuzion.chess.game.piece.Color;
 import me.infuzion.chess.game.util.Identifier;
 
-public class ChessGameMoveMessage {
+public class ChessClockExpiredMessage {
     private final Identifier gameId;
-    private final Identifier playerId;
-    private final Color moveColor;
-    private final ChessMove move;
+    private final Color expiredColor;
 
-    public ChessGameMoveMessage(Identifier gameId, Identifier playerId, Color moveColor, ChessMove move) {
+    public ChessClockExpiredMessage(Identifier gameId, Color expiredColor) {
         this.gameId = gameId;
-        this.playerId = playerId;
-        this.moveColor = moveColor;
-        this.move = move;
+        this.expiredColor = expiredColor;
     }
 
     public Identifier getGameId() {
         return gameId;
     }
 
-    public Identifier getPlayerId() {
-        return playerId;
-    }
-
-    public ChessMove getMove() {
-        return move;
-    }
-
-    /**
-     * @return The color of the player that made the move.
-     */
-    public Color getMoveColor() {
-        return moveColor;
+    public Color getExpiredColor() {
+        return expiredColor;
     }
 }

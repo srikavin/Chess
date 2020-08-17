@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package me.infuzion.chess.web.data;
+package me.infuzion.chess.data;
 
 import me.infuzion.web.server.event.AbstractEvent;
 import me.infuzion.web.server.event.reflect.param.HasBody;

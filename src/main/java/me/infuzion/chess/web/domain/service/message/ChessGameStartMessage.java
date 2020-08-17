@@ -16,39 +16,28 @@
 
 package me.infuzion.chess.web.domain.service.message;
 
-import me.infuzion.chess.game.board.ChessMove;
-import me.infuzion.chess.game.piece.Color;
 import me.infuzion.chess.game.util.Identifier;
 
-public class ChessGameMoveMessage {
+public class ChessGameStartMessage {
     private final Identifier gameId;
-    private final Identifier playerId;
-    private final Color moveColor;
-    private final ChessMove move;
+    private final Identifier whitePlayerId;
+    private final Identifier blackPlayerId;
 
-    public ChessGameMoveMessage(Identifier gameId, Identifier playerId, Color moveColor, ChessMove move) {
+    public ChessGameStartMessage(Identifier gameId, Identifier whitePlayerId, Identifier blackPlayerId) {
         this.gameId = gameId;
-        this.playerId = playerId;
-        this.moveColor = moveColor;
-        this.move = move;
+        this.whitePlayerId = whitePlayerId;
+        this.blackPlayerId = blackPlayerId;
+    }
+
+    public Identifier getWhitePlayerId() {
+        return whitePlayerId;
+    }
+
+    public Identifier getBlackPlayerId() {
+        return blackPlayerId;
     }
 
     public Identifier getGameId() {
         return gameId;
-    }
-
-    public Identifier getPlayerId() {
-        return playerId;
-    }
-
-    public ChessMove getMove() {
-        return move;
-    }
-
-    /**
-     * @return The color of the player that made the move.
-     */
-    public Color getMoveColor() {
-        return moveColor;
     }
 }

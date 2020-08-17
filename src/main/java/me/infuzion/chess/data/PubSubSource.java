@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package me.infuzion.chess.web.data;
+package me.infuzion.chess.data;
 
 /**
  * An abstraction over realtime data sources with publish/subscribe functionality. Implementing classes should broadcast

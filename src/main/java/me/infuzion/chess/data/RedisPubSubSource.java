@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package me.infuzion.chess.web.data;
+package me.infuzion.chess.data;
 
 import me.infuzion.web.server.event.EventManager;
 import me.infuzion.web.server.event.reflect.param.TypeConverter;
@@ -49,6 +49,9 @@ public class RedisPubSubSource extends JedisPubSub implements PubSubSource {
 
     @Override
     public void onPMessage(String pattern, String channel, String message) {
+        //TODO: remove
+        System.out.println(channel);
+        System.out.println(message);
         manager.fireEvent(new PubSubMessage(channel, message));
     }
 }

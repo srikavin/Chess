@@ -16,13 +16,16 @@
 
 package me.infuzion.chess.web.listener.game;
 
-import com.google.gson.Gson;
+import me.infuzion.chess.clock.ChessClockExpiredMessage;
+import me.infuzion.chess.clock.ChessClockUpdateMessage;
+import me.infuzion.chess.clock.Clock;
+import me.infuzion.chess.clock.ClockService;
+import me.infuzion.chess.data.PubSubChannel;
+import me.infuzion.chess.data.PubSubMessage;
 import me.infuzion.chess.game.board.ChessMove;
 import me.infuzion.chess.game.piece.Color;
 import me.infuzion.chess.game.util.ChessUtilities;
 import me.infuzion.chess.game.util.Identifier;
-import me.infuzion.chess.web.data.PubSubChannel;
-import me.infuzion.chess.web.data.PubSubMessage;
 import me.infuzion.chess.web.domain.Game;
 import me.infuzion.chess.web.domain.User;
 import me.infuzion.chess.web.domain.Variants;
@@ -45,8 +48,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ChessMoveListener implements EventListener {
-    private static final Gson gson = ChessUtilities.gson;
     private final GameService gameService;
+    private final ClockService clockService;
     private final EventManager eventManager;
     private final Map<Identifier, WebsocketRoom> gameListeners = new ConcurrentHashMap<>();
     private final Object genericSuccess = new Object() {
@@ -54,8 +57,9 @@ public class ChessMoveListener implements EventListener {
         final String status = "success";
     };
 
-    public ChessMoveListener(GameService service, EventManager eventManager) {
-        gameService = service;
+    public ChessMoveListener(GameService gameService, ClockService clockService, EventManager eventManager) {
+        this.gameService = gameService;
+        this.clockService = clockService;
         this.eventManager = eventManager;
     }
 
@@ -72,8 +76,9 @@ public class ChessMoveListener implements EventListener {
 
     @EventHandler
     @RequiresAuthentication(value = AuthenticationChecks.REQUEST, request = "listen", requireLoggedIn = false)
+    @Response
     @Route("/api/v1/games/")
-    private Object onListenRequest(WebSocketTextMessageEvent event, @BodyParam("id") String id) {
+    private ClockSyncResponse onListenRequest(WebSocketTextMessageEvent event, @BodyParam("id") String id) {
         Identifier gameId = new Identifier(id);
 
         if (gameService.getGame(gameId) != null) {
@@ -82,7 +87,10 @@ public class ChessMoveListener implements EventListener {
             room.addClient(event.getClient());
         }
 
-        return genericSuccess;
+        WebsocketRoom room = gameListeners.get(gameId);
+        room.addClient(event.getClient());
+
+        return new ClockSyncResponse(gameId, clockService.getClockForGame(gameId));
     }
 
     @EventHandler
@@ -115,7 +123,21 @@ public class ChessMoveListener implements EventListener {
     }
 
     @EventHandler
-    @PubSubChannel(channel = "chess.game.move")
+    @PubSubChannel(channel = "chess::clock.expire")
+    private void handleTimeExpired(PubSubMessage event, @BodyParam ChessClockExpiredMessage message) {
+        gameService.handleClockExpired(message.getGameId(), message.getExpiredColor());
+    }
+
+    @EventHandler
+    @PubSubChannel(channel = "chess::clock.update")
+    private void handleClockUpdate(PubSubMessage event, @BodyParam ChessClockUpdateMessage message) {
+        WebsocketRoom room = gameListeners.get(message.getGameId());
+
+        room.sendToAll(ChessUtilities.gson.toJson(new ClockSyncResponse(message.getGameId(), message.getUpdated())));
+    }
+
+    @EventHandler
+    @PubSubChannel(channel = "chess::game.move")
     private void onGameUpdateMove(PubSubMessage event, @BodyParam ChessGameMoveMessage message) {
         Identifier gameId = message.getGameId();
 
@@ -133,7 +155,7 @@ public class ChessMoveListener implements EventListener {
     }
 
     @EventHandler
-    @PubSubChannel(channel = "chess.game.player_join")
+    @PubSubChannel(channel = "chess::game.player_join")
     private void onGameUpdateJoin(PubSubMessage event, @BodyParam ChessGamePlayerJoinMessage message) {
         Identifier gameId = message.getGameId();
 
@@ -216,6 +238,17 @@ public class ChessMoveListener implements EventListener {
             player_id = null;
             move = null;
             state = null;
+        }
+    }
+
+    private static class ClockSyncResponse extends ChessWebsocketResponse {
+        final Identifier game_id;
+        final Clock clock;
+
+        protected ClockSyncResponse(Identifier game_id, Clock clock) {
+            super("clock_sync");
+            this.game_id = game_id;
+            this.clock = clock;
         }
     }
 }

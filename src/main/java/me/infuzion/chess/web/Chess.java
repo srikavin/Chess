@@ -2,12 +2,16 @@ package me.infuzion.chess.web;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import me.infuzion.chess.clock.Clock;
+import me.infuzion.chess.clock.ClockService;
+import me.infuzion.chess.data.PubSubChannel;
+import me.infuzion.chess.data.PubSubChannelPredicate;
+import me.infuzion.chess.data.RedisPubSubSource;
+import me.infuzion.chess.game.piece.Color;
 import me.infuzion.chess.game.util.ChessUtilities;
+import me.infuzion.chess.game.util.Identifier;
 import me.infuzion.chess.web.dao.impl.MatchDatabase;
 import me.infuzion.chess.web.dao.impl.UserDatabase;
-import me.infuzion.chess.web.data.PubSubChannel;
-import me.infuzion.chess.web.data.PubSubChannelPredicate;
-import me.infuzion.chess.web.data.RedisPubSubSource;
 import me.infuzion.chess.web.domain.service.GameService;
 import me.infuzion.chess.web.domain.service.TokenService;
 import me.infuzion.chess.web.event.helper.RequestUser;
@@ -27,6 +31,7 @@ import me.infuzion.web.server.event.reflect.EventHandler;
 import me.infuzion.web.server.event.reflect.param.DefaultTypeConverter;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 
 import java.io.IOException;
 import java.net.URI;
@@ -45,10 +50,6 @@ public class Chess implements EventListener {
 
         RedisPubSubSource source = new RedisPubSubSource(manager, pool, new DefaultTypeConverter(ChessUtilities.gson));
 
-        Thread thread = new Thread(() -> pool.getResource().psubscribe(source, "chess*"));
-        thread.setName("Redis Subscription Thread");
-        thread.start();
-
         TokenService tokenService = new TokenService(pool, userDatabase);
         GameService gameService = new GameService(matchDatabase, source);
 
@@ -56,9 +57,31 @@ public class Chess implements EventListener {
         manager.registerAnnotation(RequestUser.class, new RequestUserParamMapper(tokenService));
         manager.registerAnnotation(PubSubChannel.class, new PubSubChannelPredicate());
 
+        Thread thread = new Thread(() -> {
+            while (true) {
+                try {
+                    pool.getResource().psubscribe(source, "chess*");
+                } catch (JedisConnectionException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
+        thread.setName("Redis Subscription Thread");
+        thread.start();
+
+        ClockService service = new ClockService(pool, source);
+        Thread thread1 = new Thread(service::runClearExpiringGames);
+        thread1.setName("ClockService - runClearExpiringGames");
+        thread1.start();
+
+        Thread thread2 = new Thread(service::runHandleExpiringGames);
+        thread2.setName("ClockService - runHandleExpiringGames");
+        thread2.start();
+
+        manager.registerListener(service);
         manager.registerListener(new ChessAuthenticationHelper(tokenService));
         manager.registerListener(new ChessUserAuthenticationListener(userDatabase, tokenService));
-        manager.registerListener(new ChessMoveListener(gameService, manager));
+        manager.registerListener(new ChessMoveListener(gameService, service, manager));
         manager.registerListener(new ChessUserProfileListener(userDatabase));
         manager.registerListener(new ChessGameListener(gameService));
 
@@ -69,6 +92,9 @@ public class Chess implements EventListener {
                 event.setResponseHeader("Access-Control-Allow-Headers", "*");
             }
         });
+
+        //TODO: remove
+        service.startClockForGame(new Identifier("c5cbAkfLPbbIBlnF"), new Clock(3000, 3000, Color.WHITE));
 
         server.start();
     }
