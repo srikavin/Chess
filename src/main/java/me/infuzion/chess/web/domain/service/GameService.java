@@ -16,15 +16,17 @@
 
 package me.infuzion.chess.web.domain.service;
 
+import me.infuzion.chess.data.PubSubSource;
 import me.infuzion.chess.game.board.ChessMove;
 import me.infuzion.chess.game.piece.Color;
 import me.infuzion.chess.game.util.Identifier;
 import me.infuzion.chess.web.dao.MatchDao;
-import me.infuzion.chess.web.data.PubSubSource;
 import me.infuzion.chess.web.domain.Game;
 import me.infuzion.chess.web.domain.GameStatus;
+import me.infuzion.chess.web.domain.service.message.ChessGameEndMessage;
 import me.infuzion.chess.web.domain.service.message.ChessGameMoveMessage;
 import me.infuzion.chess.web.domain.service.message.ChessGamePlayerJoinMessage;
+import me.infuzion.chess.web.domain.service.message.ChessGameStartMessage;
 import org.jetbrains.annotations.NotNull;
 
 import java.security.SecureRandom;
@@ -110,7 +112,22 @@ public class GameService {
 
         pubSubSource.publish("chess.game.player_join", new ChessGamePlayerJoinMessage(gameId, player));
 
+        if (game.getStatus() == GameStatus.IN_PROGRESS_WHITE) {
+            pubSubSource.publish("chess::game.start", new ChessGameStartMessage(gameId, game.getPlayerWhite(), game.getPlayerBlack()));
+        }
+
         return true;
+    }
+
+    public void handleClockExpired(@NotNull Identifier gameId, @NotNull Color expiredColor) {
+        Game game = matchDao.getMatch(gameId);
+
+        game.setStatus(expiredColor == Color.WHITE ? GameStatus.ENDED_WHITE_OUT_OF_TIME : GameStatus.ENDED_BLACK_OUT_OF_TIME);
+
+        matchDao.updateMatch(game);
+        pubSubSource.publish("chess::game.end", new ChessGameEndMessage(gameId, game.getStatus()));
+
+        System.out.println("handling game end");
     }
 
     public boolean addMove(@NotNull Identifier matchId, @NotNull Identifier playerId, @NotNull ChessMove move) {
@@ -118,7 +135,7 @@ public class GameService {
         Game game = matchDao.getMatch(matchId);
         long start = System.currentTimeMillis();
 
-        if (game == null || game.getStatus() == GameStatus.WAITING) {
+        if (game == null || !game.getStatus().isInProgress()) {
             return false;
         }
 
@@ -129,6 +146,7 @@ public class GameService {
         }
 
         boolean moveAllowed = game.getBoard().move(move);
+        Color moveColor = game.getStatus() == GameStatus.IN_PROGRESS_WHITE ? Color.WHITE : Color.BLACK;
 
         if (!moveAllowed) {
             System.out.println(2);
@@ -148,7 +166,7 @@ public class GameService {
         long end = System.currentTimeMillis();
         System.out.println("verify: " + (start2 - start) + " fetch: " + (start - start3) + " persist: " + (end - start2) + " total: " + (end - start3));
 
-        pubSubSource.publish("chess.game.move", new ChessGameMoveMessage(game.getId(), playerId, move));
+        pubSubSource.publish("chess::game.move", new ChessGameMoveMessage(game.getId(), playerId, moveColor, move));
         return true;
     }
 }

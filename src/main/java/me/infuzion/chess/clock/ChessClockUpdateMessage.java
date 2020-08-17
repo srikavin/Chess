@@ -14,19 +14,24 @@
  * limitations under the License.
  */
 
-package me.infuzion.chess.web.data;
+package me.infuzion.chess.clock;
 
-import me.infuzion.web.server.event.Event;
-import me.infuzion.web.server.event.reflect.param.mapper.EventPredicate;
+import me.infuzion.chess.game.util.Identifier;
 
-public class PubSubChannelPredicate implements EventPredicate<PubSubChannel, PubSubMessage> {
-    @Override
-    public boolean shouldCall(PubSubChannel annotation, PubSubMessage event) {
-        return annotation.channel().equals("") || annotation.channel().equals(event.getChannel());
+public class ChessClockUpdateMessage {
+    private final Identifier gameId;
+    private final Clock updated;
+
+    public ChessClockUpdateMessage(Identifier gameId, Clock updated) {
+        this.gameId = gameId;
+        this.updated = updated;
     }
 
-    @Override
-    public boolean validate(PubSubChannel annotation, Class<? extends Event> event) {
-        return event.isAssignableFrom(PubSubMessage.class);
+    public Identifier getGameId() {
+        return gameId;
+    }
+
+    public Clock getUpdated() {
+        return updated;
     }
 }

@@ -22,7 +22,9 @@ public enum GameStatus {
     ENDED_DRAW(2),
     ENDED_WHITE_WINS(3),
     ENDED_BLACK_WINS(4),
-    WAITING(5);
+    WAITING(5),
+    ENDED_WHITE_OUT_OF_TIME(6),
+    ENDED_BLACK_OUT_OF_TIME(7);
     public static final GameStatus[] values = values();
     private final int value;
 
@@ -41,5 +43,9 @@ public enum GameStatus {
             }
         }
         return null;
+    }
+
+    public boolean isInProgress() {
+        return this == IN_PROGRESS_WHITE || this == IN_PROGRESS_BLACK;
     }
 }

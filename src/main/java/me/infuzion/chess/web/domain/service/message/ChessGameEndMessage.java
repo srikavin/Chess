@@ -14,12 +14,25 @@
  * limitations under the License.
  */
 
-package me.infuzion.chess.web.data;
+package me.infuzion.chess.web.domain.service.message;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
+import me.infuzion.chess.game.util.Identifier;
+import me.infuzion.chess.web.domain.GameStatus;
 
-@Retention(RetentionPolicy.RUNTIME)
-public @interface PubSubChannel {
-    String channel() default "";
+public class ChessGameEndMessage {
+    private final Identifier gameId;
+    private final GameStatus finalState;
+
+    public ChessGameEndMessage(Identifier gameId, GameStatus finalState) {
+        this.gameId = gameId;
+        this.finalState = finalState;
+    }
+
+    public GameStatus getFinalState() {
+        return finalState;
+    }
+
+    public Identifier getGameId() {
+        return gameId;
+    }
 }
