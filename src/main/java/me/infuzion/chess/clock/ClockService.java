@@ -120,14 +120,16 @@ public class ClockService implements EventListener {
         System.out.println("time expired");
     }
 
-    public void startClockForGame(@NotNull Identifier gameId, @NotNull Clock clock) {
+    public void startClockForGame(@NotNull Identifier gameId, int whiteTimeDeciSeconds, int blackTimeDeciSeconds) {
         String game = gameId.getId();
         String clockKey = "chess::clock.active." + game;
 
+        Instant instant = Instant.now();
+
+        Clock clock = new Clock(whiteTimeDeciSeconds, blackTimeDeciSeconds, instant.toEpochMilli(), WHITE);
+
         try (Jedis jedis = pool.getResource()) {
             jedis.watch(clockKey);
-
-            Instant instant = Instant.now();
 
             if (jedis.exists(clockKey)) {
                 // timer was already started, abort this transaction
@@ -175,7 +177,7 @@ public class ClockService implements EventListener {
                 blackTimeDeciSeconds -= (int) (Duration.between(lastMoveTime, now).toMillis() / 100);
             }
 
-            return new Clock(whiteTimeDeciSeconds, blackTimeDeciSeconds, color);
+            return new Clock(whiteTimeDeciSeconds, blackTimeDeciSeconds, lastMoveTime.toEpochMilli(), color);
         }
     }
 
@@ -215,12 +217,12 @@ public class ClockService implements EventListener {
             Color color = Color.valueOf(colorStr);
 
             if (color == WHITE) {
-                whiteTime -= (int) (Duration.between(lastMoveTime, now).toMillis() / 100);
-                transaction.zadd("chess::clock.expiring", whiteTime, gameId);
+                whiteTime -= (int) (Duration.between(lastMoveTime, now).toMillis() / 100.);
+                transaction.zadd("chess::clock.expiring", (now.toEpochMilli() / 100.) + whiteTime, gameId);
                 transaction.hset(clockKey, "white_time", Integer.toString(whiteTime));
             } else if (color == BLACK) {
-                blackTime -= (int) (Duration.between(lastMoveTime, now).toMillis() / 100);
-                transaction.zadd("chess::clock.expiring", blackTime, gameId);
+                blackTime -= (int) (Duration.between(lastMoveTime, now).toMillis() / 100.);
+                transaction.zadd("chess::clock.expiring", (now.toEpochMilli() / 100.) + blackTime, gameId);
                 transaction.hset(clockKey, "black_time", Integer.toString(blackTime));
             }
 
@@ -228,7 +230,7 @@ public class ClockService implements EventListener {
             transaction.hset(clockKey, "last_move_time", DateTimeFormatter.ISO_INSTANT.format(now));
 
             transaction.exec();
-            pubSubSource.publish("chess::clock.update", new ChessClockUpdateMessage(message.getGameId(), new Clock(whiteTime, blackTime, color)));
+            pubSubSource.publish("chess::clock.update", new ChessClockUpdateMessage(message.getGameId(), new Clock(whiteTime, blackTime, lastMoveTime.toEpochMilli(), color)));
         }
     }
 

@@ -94,6 +94,16 @@ public class ChessMoveListener implements EventListener {
     }
 
     @EventHandler
+    @RequiresAuthentication(value = AuthenticationChecks.REQUEST, request = "request_clock_sync", requireLoggedIn = false)
+    @Response
+    @Route("/api/v1/games/")
+    private ClockSyncResponse onClockSyncRequest(WebSocketTextMessageEvent event, @BodyParam("id") String id) {
+        Identifier gameId = new Identifier(id);
+
+        return new ClockSyncResponse(gameId, clockService.getClockForGame(gameId));
+    }
+
+    @EventHandler
     @RequiresAuthentication(value = AuthenticationChecks.REQUEST, request = "stop_listen", requireLoggedIn = false)
     @Route("/api/v1/games/")
     private Object onStopListenRequest(WebSocketTextMessageEvent event, @BodyParam("id") String id) {
