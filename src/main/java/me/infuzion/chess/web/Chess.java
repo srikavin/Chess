@@ -2,12 +2,10 @@ package me.infuzion.chess.web;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import me.infuzion.chess.clock.Clock;
 import me.infuzion.chess.clock.ClockService;
 import me.infuzion.chess.data.PubSubChannel;
 import me.infuzion.chess.data.PubSubChannelPredicate;
 import me.infuzion.chess.data.RedisPubSubSource;
-import me.infuzion.chess.game.piece.Color;
 import me.infuzion.chess.game.util.ChessUtilities;
 import me.infuzion.chess.game.util.Identifier;
 import me.infuzion.chess.web.dao.impl.MatchDatabase;
@@ -94,7 +92,8 @@ public class Chess implements EventListener {
         });
 
         //TODO: remove
-        service.startClockForGame(new Identifier("c5cbAkfLPbbIBlnF"), new Clock(3000, 3000, Color.WHITE));
+        service.startClockForGame(new Identifier("c5cbAkfLPbbIBlnF"), 3000000, 3000000);
+
 
         server.start();
     }

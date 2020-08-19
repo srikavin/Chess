@@ -21,11 +21,13 @@ import me.infuzion.chess.game.piece.Color;
 public class Clock {
     private final int whiteTimeDeciSeconds;
     private final int blackTimeDeciSeconds;
+    private final long lastMoveTimeEpochMillis;
     private final Color currentActive;
 
-    public Clock(int whiteTimeDeciSeconds, int blackTimeDeciSeconds, Color currentActive) {
+    public Clock(int whiteTimeDeciSeconds, int blackTimeDeciSeconds, long lastMoveTimeEpochMillis, Color currentActive) {
         this.whiteTimeDeciSeconds = whiteTimeDeciSeconds;
         this.blackTimeDeciSeconds = blackTimeDeciSeconds;
+        this.lastMoveTimeEpochMillis = lastMoveTimeEpochMillis;
         this.currentActive = currentActive;
     }
 
