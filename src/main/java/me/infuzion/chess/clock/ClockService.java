@@ -230,7 +230,7 @@ public class ClockService implements EventListener {
             transaction.hset(clockKey, "last_move_time", DateTimeFormatter.ISO_INSTANT.format(now));
 
             transaction.exec();
-            pubSubSource.publish("chess::clock.update", new ChessClockUpdateMessage(message.getGameId(), new Clock(whiteTime, blackTime, lastMoveTime.toEpochMilli(), color)));
+            pubSubSource.publish("chess::clock.update", new ChessClockUpdateMessage(message.getGameId(), new Clock(whiteTime, blackTime, lastMoveTime.toEpochMilli(), color.invert())));
         }
     }
 
