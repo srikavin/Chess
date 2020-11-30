@@ -23,6 +23,7 @@ import me.infuzion.chess.game.piece.Color;
 import me.infuzion.chess.game.util.Identifier;
 import me.infuzion.chess.web.domain.service.message.ChessGameEndMessage;
 import me.infuzion.chess.web.domain.service.message.ChessGameMoveMessage;
+import me.infuzion.chess.web.domain.service.message.ChessGameStartMessage;
 import me.infuzion.web.server.EventListener;
 import me.infuzion.web.server.event.reflect.EventHandler;
 import me.infuzion.web.server.event.reflect.param.mapper.impl.BodyParam;
@@ -120,6 +121,12 @@ public class ClockService implements EventListener {
         System.out.println("time expired");
     }
 
+    @EventHandler
+    @PubSubChannel(channel = "chess::game.move")
+    private void onGameStart(PubSubMessage event, @BodyParam ChessGameStartMessage message) {
+        startClockForGame(message.getGameId(), 10 * 60 * 5, 10 * 60 * 5);
+    }
+
     public void startClockForGame(@NotNull Identifier gameId, int whiteTimeDeciSeconds, int blackTimeDeciSeconds) {
         String game = gameId.getId();
         String clockKey = "chess::clock.active." + game;
@@ -172,9 +179,9 @@ public class ClockService implements EventListener {
             System.out.println(lastMoveTime);
 
             if (color == WHITE) {
-                whiteTimeDeciSeconds -= (int) (Duration.between(lastMoveTime, now).toMillis() / 100);
+                whiteTimeDeciSeconds -= (int) (Duration.between(lastMoveTime, now).toMillis() / 100.);
             } else if (color == BLACK) {
-                blackTimeDeciSeconds -= (int) (Duration.between(lastMoveTime, now).toMillis() / 100);
+                blackTimeDeciSeconds -= (int) (Duration.between(lastMoveTime, now).toMillis() / 100.);
             }
 
             return new Clock(whiteTimeDeciSeconds, blackTimeDeciSeconds, lastMoveTime.toEpochMilli(), color);

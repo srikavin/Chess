@@ -7,7 +7,6 @@ import me.infuzion.chess.data.PubSubChannel;
 import me.infuzion.chess.data.PubSubChannelPredicate;
 import me.infuzion.chess.data.RedisPubSubSource;
 import me.infuzion.chess.game.util.ChessUtilities;
-import me.infuzion.chess.game.util.Identifier;
 import me.infuzion.chess.web.dao.impl.MatchDatabase;
 import me.infuzion.chess.web.dao.impl.UserDatabase;
 import me.infuzion.chess.web.domain.service.GameService;
@@ -85,15 +84,11 @@ public class Chess implements EventListener {
 
         manager.registerListener(new EventListener() {
             @EventHandler()
-            private void test(PageRequestEvent event) {
+            private void cors(PageRequestEvent event) {
                 event.setResponseHeader("Access-Control-Allow-Origin", "*");
                 event.setResponseHeader("Access-Control-Allow-Headers", "*");
             }
         });
-
-        //TODO: remove
-        service.startClockForGame(new Identifier("c5cbAkfLPbbIBlnF"), 3000000, 3000000);
-
 
         server.start();
     }

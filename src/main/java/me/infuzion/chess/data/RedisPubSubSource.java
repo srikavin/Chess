@@ -49,9 +49,6 @@ public class RedisPubSubSource extends JedisPubSub implements PubSubSource {
 
     @Override
     public void onPMessage(String pattern, String channel, String message) {
-        //TODO: remove
-        System.out.println(channel);
-        System.out.println(message);
         manager.fireEvent(new PubSubMessage(channel, message));
     }
 }
