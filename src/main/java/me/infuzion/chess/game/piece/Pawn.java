@@ -22,12 +22,15 @@ public class Pawn extends ChessPiece {
                 board.getData().setPiece(enPassantSquare.getRank(), enPassantSquare.getFile() + 1, null);
             }
             board.getData().setEnPassantSquare(null);
-        } else {
+        } else if ((move.getSource().getFile() == 1 || move.getSource().getFile() == 6) &&
+                (move.getEnd().getFile() == 3 || move.getEnd().getFile() == 4)) {
             ChessPosition position = getEnPassantSquare(board, move.getSource(), move.getEnd());
 
             if (position != null) {
                 board.getData().setEnPassantSquare(position);
             }
+        } else {
+            board.getData().setEnPassantSquare(null);
         }
 
         board.getData().setPiece(this.currentPosition(), null);

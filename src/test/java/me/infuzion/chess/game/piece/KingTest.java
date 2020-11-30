@@ -117,6 +117,9 @@ class KingTest {
         assertTrue(king.allowed(def, new ChessPosition("c8")));
         assertFalse(king.allowed(def, new ChessPosition("g8")));
 
+        // make move to change current turn color
+        assertTrue(board.move(new ChessMove("a2", "a3")));
+
         // check rook position
         assertTrue(board.move(new ChessMove("e8", "c8")));
         assertEquals(PieceType.ROOK, def.getPiece(new ChessPosition("d8")).getType());
@@ -145,6 +148,9 @@ class KingTest {
         assertFalse(king.allowed(def, new ChessPosition("g1")));
         assertFalse(king.allowed(def, new ChessPosition("c8")));
         assertTrue(king.allowed(def, new ChessPosition("g8")));
+
+        // make move to change current turn color
+        assertTrue(board.move(new ChessMove("a2", "a3")));
 
         // check rook position
         assertTrue(board.move(new ChessMove("e8", "g8")));

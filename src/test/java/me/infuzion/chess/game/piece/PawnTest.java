@@ -142,5 +142,20 @@ class PawnTest {
         assertTrue(board.move(new ChessMove("g5", "h6")));
         assertNull(data.getPiece(new ChessPosition("h5")));
         assertNull(data.getEnPassantSquare());
+
+        // normally moving a pawn should reset the stored en passant square
+        assertTrue(board.move(new ChessMove("b7", "b6")));
+        assertNull(data.getEnPassantSquare());
+
+        data.setEnPassantSquare(new ChessPosition("a3"));
+
+        assertTrue(board.move(new ChessMove("b2", "b3")));
+        assertNull(data.getEnPassantSquare());
+
+        // moving random piece should reset the stored en passant square
+        data.setEnPassantSquare(new ChessPosition("a3"));
+
+        assertTrue(board.move(new ChessMove("b8", "c6")));
+        assertNull(data.getEnPassantSquare());
     }
 }
