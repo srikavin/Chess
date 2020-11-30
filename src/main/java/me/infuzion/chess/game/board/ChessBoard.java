@@ -202,6 +202,10 @@ public class ChessBoard {
             return false;
         }
 
+        if (from.getColor() != this.currentTurn) {
+            return false;
+        }
+
         boolean valid = from.move(this, move);
 
         if (!valid) {
