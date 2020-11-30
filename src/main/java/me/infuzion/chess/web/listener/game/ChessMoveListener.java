@@ -82,8 +82,7 @@ public class ChessMoveListener implements EventListener {
         Identifier gameId = new Identifier(id);
 
         if (gameService.getGame(gameId) != null) {
-            gameListeners.computeIfAbsent(gameId, (gId) -> new WebsocketRoom(eventManager));
-            WebsocketRoom room = gameListeners.get(gameId);
+            WebsocketRoom room = gameListeners.computeIfAbsent(gameId, (gid) -> new WebsocketRoom(eventManager));
             room.addClient(event.getClient());
         }
 
@@ -110,8 +109,7 @@ public class ChessMoveListener implements EventListener {
         Identifier gameId = new Identifier(id);
 
         if (gameService.getGame(gameId) != null) {
-            gameListeners.computeIfAbsent(gameId, (gId) -> new WebsocketRoom(eventManager));
-            WebsocketRoom room = gameListeners.get(gameId);
+            WebsocketRoom room = gameListeners.computeIfAbsent(gameId, (gid) -> new WebsocketRoom(eventManager));
             room.removeClient(event.getClient());
         }
 
@@ -119,17 +117,17 @@ public class ChessMoveListener implements EventListener {
     }
 
     @EventHandler
-    @RequiresAuthentication(value = AuthenticationChecks.REQUEST, request = "create")
+    @RequiresAuthentication(value = AuthenticationChecks.REQUEST, request = "create_game")
     @Route("/api/v1/games/")
     @Response
-    private JoinResponse onCreateRequest(WebSocketTextMessageEvent event, @RequestUser User user) {
+    private CreateResponse onCreateRequest(WebSocketTextMessageEvent event, @RequestUser User user) {
         Game game = gameService.createGame(Variants.STANDARD_FEN, user.getIdentifier(), Color.WHITE);
 
-        WebsocketRoom room = new WebsocketRoom(eventManager);
-        gameListeners.put(game.getId(), room);
+        WebsocketRoom room = gameListeners.computeIfAbsent(game.getId(), (gid) -> new WebsocketRoom(eventManager));
+
         room.addClient(event.getClient());
 
-        return new JoinResponse(game.getId(), user.getIdentifier(), game);
+        return new CreateResponse(game.getId(), user.getIdentifier(), game);
     }
 
     @EventHandler
@@ -195,8 +193,17 @@ public class ChessMoveListener implements EventListener {
         Identifier gameId = new Identifier(message.id);
         ChessMove move = message.move;
 
-
         if (!gameService.addMove(gameId, user.getIdentifier(), move)) {
+            Game game = gameService.getGame(gameId);
+
+            if (game != null) {
+                event.getClient().send(ChessUtilities.gson.toJson(new GameStateUpdateResponse(game)));
+                Clock clock = clockService.getClockForGame(gameId);
+                if (clock != null) {
+                    event.getClient().send(ChessUtilities.gson.toJson(new ClockSyncResponse(gameId, clock)));
+                }
+            }
+
             return new MoveResponse("game not found or invalid move");
         }
 
@@ -225,6 +232,35 @@ public class ChessMoveListener implements EventListener {
             game_id = null;
             player_id = null;
             state = null;
+        }
+    }
+
+    private static class CreateResponse extends ChessWebsocketResponse {
+        final String game_id;
+        final String player_id;
+        final Game state;
+
+        protected CreateResponse(Identifier game_id, Identifier player_id, Game state) {
+            super("game_create");
+            this.game_id = game_id.getId();
+            this.player_id = player_id.getId();
+            this.state = state;
+        }
+
+        protected CreateResponse(String error) {
+            super("game_create", error);
+            game_id = null;
+            player_id = null;
+            state = null;
+        }
+    }
+
+    private static class GameStateUpdateResponse extends ChessWebsocketResponse {
+        final Game state;
+
+        protected GameStateUpdateResponse(Game state) {
+            super("state_update");
+            this.state = state;
         }
     }
 

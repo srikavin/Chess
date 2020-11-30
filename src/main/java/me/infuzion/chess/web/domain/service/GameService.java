@@ -141,7 +141,6 @@ public class GameService {
 
         if ((game.getStatus() == GameStatus.IN_PROGRESS_WHITE && !game.getPlayerWhite().equals(playerId)) ||
                 (game.getStatus() == GameStatus.IN_PROGRESS_BLACK && !game.getPlayerBlack().equals(playerId))) {
-            System.out.println(1);
             return false;
         }
 
@@ -149,7 +148,6 @@ public class GameService {
         Color moveColor = game.getStatus() == GameStatus.IN_PROGRESS_WHITE ? Color.WHITE : Color.BLACK;
 
         if (!moveAllowed) {
-            System.out.println(2);
             return false;
         }
 
