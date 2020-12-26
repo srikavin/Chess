@@ -18,6 +18,7 @@ package me.infuzion.chess.web;
 
 import com.intuit.karate.junit5.Karate;
 import me.infuzion.web.server.Server;
+import org.junit.jupiter.api.BeforeAll;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -26,7 +27,7 @@ import java.net.URISyntaxException;
 public class KarateIT {
     static Thread t;
 
-//    @BeforeAll
+    @BeforeAll
     static void before() {
         if (t != null) {
             t.stop();
@@ -35,7 +36,7 @@ public class KarateIT {
         t = new Thread(() -> {
             try {
                 Server server = new Server(new InetSocketAddress("0.0.0.0", 37628));
-                new Chess(server);
+                new Chess(server, System.getenv("JDBC_DATABASE_URL"), System.getenv("REDIS_URL"));
             } catch (IOException | URISyntaxException e) {
                 e.printStackTrace();
             }
@@ -47,7 +48,7 @@ public class KarateIT {
 
     }
 
-//    @Karate.Test
+    @Karate.Test
     Karate testSample() {
         return Karate.run("Games").relativeTo(getClass());
     }

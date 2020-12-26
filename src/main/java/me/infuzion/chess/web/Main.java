@@ -25,6 +25,6 @@ public class Main {
 
         Server server = new Server(new InetSocketAddress("0.0.0.0", port), new DefaultTypeConverter(ChessUtilities.gson));
 
-        new Chess(server);
+        new Chess(server, System.getenv("JDBC_DATABASE_URL"), System.getenv("REDIS_URL"));
     }
 }

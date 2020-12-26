@@ -36,11 +36,11 @@ import java.net.URISyntaxException;
 
 public class Chess implements EventListener {
 
-    public Chess(Server server) throws IOException, URISyntaxException {
+    public Chess(Server server, String postgresJDBCUri, String redisUri) throws IOException, URISyntaxException {
         EventManager manager = server.getEventManager();
 
-        HikariDataSource ds = getSqlDataSource();
-        JedisPool pool = createJedisPool();
+        HikariDataSource ds = getSqlDataSource(postgresJDBCUri);
+        JedisPool pool = createJedisPool(redisUri);
 
         UserDatabase userDatabase = new UserDatabase(ds);
         MatchDatabase matchDatabase = new MatchDatabase(ds);
@@ -93,9 +93,7 @@ public class Chess implements EventListener {
         server.start();
     }
 
-    private static HikariDataSource getSqlDataSource() {
-        String url = System.getenv("JDBC_DATABASE_URL");
-
+    private static HikariDataSource getSqlDataSource(String url) {
         HikariConfig config = new HikariConfig();
         config.setJdbcUrl(url);
 
@@ -107,8 +105,8 @@ public class Chess implements EventListener {
         return new HikariDataSource(config);
     }
 
-    private static JedisPool createJedisPool() throws URISyntaxException {
-        URI redisURI = new URI(System.getenv("REDIS_URL"));
+    private static JedisPool createJedisPool(String uri) throws URISyntaxException {
+        URI redisURI = new URI(uri);
         JedisPoolConfig poolConfig = new JedisPoolConfig();
         poolConfig.setMaxTotal(10);
         poolConfig.setMaxIdle(5);
