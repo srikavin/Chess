@@ -20,13 +20,15 @@ import com.google.gson.JsonObject;
 import me.infuzion.chess.game.util.ChessObject;
 import me.infuzion.chess.game.util.Identifier;
 
+import java.time.Instant;
+
 public class User extends ChessObject {
     private final String username;
-    private final long lastSeen;
+    private final Instant lastSeen;
     private final String bio;
     private final String imagePath;
 
-    public User(Identifier identifier, String username, long lastSeen, String bio, String imagePath) {
+    public User(Identifier identifier, String username, Instant lastSeen, String bio, String imagePath) {
         setIdentifier(identifier);
         this.imagePath = imagePath;
         this.username = username;
@@ -34,7 +36,7 @@ public class User extends ChessObject {
         this.bio = bio == null ? "" : bio;
     }
 
-    public User(Identifier identifier, String username, long currentEpoch, String imagePath) {
+    public User(Identifier identifier, String username, Instant currentEpoch, String imagePath) {
         this(identifier, username, currentEpoch, null, imagePath);
     }
 
@@ -42,7 +44,7 @@ public class User extends ChessObject {
         return username;
     }
 
-    public long getLastSeen() {
+    public Instant getLastSeen() {
         return lastSeen;
     }
 
@@ -59,7 +61,7 @@ public class User extends ChessObject {
         object.addProperty("id", this.getIdentifier().getId());
         object.addProperty("username", this.getUsername());
         object.addProperty("bio", this.getBio());
-        object.addProperty("lastSeen", this.getLastSeen());
+        object.addProperty("lastSeen", this.getLastSeen().toEpochMilli());
         return object;
     }
 }

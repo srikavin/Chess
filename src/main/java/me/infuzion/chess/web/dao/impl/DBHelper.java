@@ -16,6 +16,7 @@
 
 package me.infuzion.chess.web.dao.impl;
 
+import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -101,7 +102,7 @@ public class DBHelper {
         }
     }
 
-    public static <T> T prepareStatement(DataSource source, String sql, PreparedStatementHandler<T> callable) {
+    public static <T> T prepareStatement(DataSource source, @Language("sql") String sql, PreparedStatementHandler<T> callable) {
         try (Connection connection = source.getConnection()) {
             return prepareStatement(connection, sql, callable);
         } catch (SQLException e) {
@@ -109,13 +110,13 @@ public class DBHelper {
         }
     }
 
-    public static <T> T prepareStatement(Connection connection, String sql, PreparedStatementHandler<T> callable) throws SQLException {
+    public static <T> T prepareStatement(Connection connection, @Language("sql") String sql, PreparedStatementHandler<T> callable) throws SQLException {
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             return callable.call(preparedStatement);
         }
     }
 
-    public static void executeStatement(DataSource source, String sql) {
+    public static void executeStatement(DataSource source, @Language("sql") String sql) {
         try (Connection connection = source.getConnection()) {
             executeStatement(connection, sql);
         } catch (SQLException e) {
@@ -123,7 +124,7 @@ public class DBHelper {
         }
     }
 
-    public static void executeStatement(Connection connection, String sql) throws SQLException {
+    public static void executeStatement(Connection connection, @Language("sql") String sql) throws SQLException {
         try (Statement statement = connection.createStatement()) {
             statement.execute(sql);
         }

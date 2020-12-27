@@ -24,12 +24,8 @@ import org.jetbrains.annotations.Nullable;
 import org.mindrot.jbcrypt.BCrypt;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.time.Instant;
-import java.time.ZoneOffset;
 
 public class UserDatabase extends Database implements UserDao {
     private final DataSource source;
@@ -42,20 +38,16 @@ public class UserDatabase extends Database implements UserDao {
                 + "PASSWORD varchar(60),"
                 + "BIO text default 'nothing to see here',"
                 + "ROLE varchar(64) default 'USER',"
-                + "IMAGE_PATH bytea default null,"
-                + "LAST_LOGIN timestamp default now())");
+                + "IMAGE_PATH bytea default '/images/unknown.png',"
+                + "LAST_LOGIN timestamp with time zone default now())");
 
         createUser(new Identifier(), "testing", "abc");
-    }
-
-    private static long getCurrentEpoch() {
-        return Instant.now().atOffset(ZoneOffset.UTC).toInstant().toEpochMilli();
     }
 
     private @NotNull User mapUser(ResultSet set) throws SQLException {
         String id = set.getString("ID");
         String username = set.getString("USERNAME");
-        long lastLogin = set.getLong("LAST_LOGIN");
+        Instant lastLogin = set.getTimestamp("LAST_LOGIN").toInstant();
         String bio = set.getString("BIO");
         String imagePath = set.getString("IMAGE_PATH");
 
@@ -79,7 +71,7 @@ public class UserDatabase extends Database implements UserDao {
             ps.setString(1, id.getId());
             ps.setString(2, username);
             ps.setString(3, hashed);
-            ps.setLong(4, getCurrentEpoch());
+            ps.setTimestamp(4, Timestamp.from(Instant.now()));
             ps.executeUpdate();
 
             return getUser(id.getId());
@@ -115,14 +107,16 @@ public class UserDatabase extends Database implements UserDao {
                     return null;
                 }
 
+                Instant now = Instant.now();
+
                 DBHelper.prepareStatement(source, "UPDATE USERS SET LAST_LOGIN = ? WHERE ID = ?", (lastSeenPS) -> {
                     // update user last login
-                    lastSeenPS.setLong(1, getCurrentEpoch());
+                    lastSeenPS.setTimestamp(1, Timestamp.from(now));
                     lastSeenPS.setString(2, id);
                     lastSeenPS.executeUpdate();
                 });
 
-                return new User(new Identifier(id), username, getCurrentEpoch(), bio, imagePath);
+                return new User(new Identifier(id), username, now, bio, imagePath);
             });
         });
     }
