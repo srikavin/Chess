@@ -8,4 +8,4 @@ Feature: test1
     Given path '/api/v1/games'
     When method GET
     Then status 200
-    And match response == { games: [], users: [] }
+    And match response == []
