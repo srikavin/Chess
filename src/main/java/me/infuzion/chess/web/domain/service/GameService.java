@@ -110,7 +110,7 @@ public class GameService {
 
         matchDao.updateMatch(game);
 
-        pubSubSource.publish("chess.game.player_join", new ChessGamePlayerJoinMessage(gameId, player));
+        pubSubSource.publish("chess::game.player_join", new ChessGamePlayerJoinMessage(gameId, player));
 
         if (game.getStatus() == GameStatus.IN_PROGRESS_WHITE) {
             pubSubSource.publish("chess::game.start", new ChessGameStartMessage(gameId, game.getPlayerWhite(), game.getPlayerBlack()));
