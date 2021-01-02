@@ -80,6 +80,7 @@ public class ChessUserProfileListener implements EventListener {
         User user = database.getUser(new Identifier(id));
 
         if (user == null) {
+            event.getResponse().setStatusCode(404);
             return new JsonObject();
         }
 
@@ -93,6 +94,7 @@ public class ChessUserProfileListener implements EventListener {
         User user = database.getUser(username);
 
         if (user == null) {
+            event.getResponse().setStatusCode(404);
             return new JsonObject();
         }
 
