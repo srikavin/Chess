@@ -108,15 +108,8 @@ public class ChessUserProfileListener implements EventListener {
         HttpResponse response = event.getResponse();
         User user = database.getUser(new Identifier(userId));
         if (user != null) {
-            Path pathToImage = Paths.get(user.getImagePath());
-            byte[] image;
-
-            if (pathToImage.equals(Path.of("/images/unknown.png"))) {
-                image = drawErrorString(user.getUsername());
-            } else {
-                image = Files.readAllBytes(pathToImage);
-            }
-            return image;
+            //TODO: Store Google Cloud/S3 object ids to allow users to upload profile images
+            return drawErrorString(user.getUsername());
         } else {
             response.setStatusCode(404);
             return drawErrorString("user not found");
