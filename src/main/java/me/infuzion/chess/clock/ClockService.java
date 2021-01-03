@@ -66,7 +66,6 @@ public class ClockService implements EventListener {
 
                 if (results.size() == 0) {
                     jedis.unwatch();
-                    Thread.sleep(50);
                     continue;
                 }
 
@@ -79,8 +78,6 @@ public class ClockService implements EventListener {
 
                 transaction.exec();
             }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
         }
     }
 
