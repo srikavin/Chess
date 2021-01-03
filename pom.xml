@@ -36,12 +36,12 @@
         <dependency>
             <groupId>com.github.srikavin</groupId>
             <artifactId>Glade</artifactId>
-            <version>v1.7.3</version>
+            <version>v1.8.0</version>
         </dependency>
         <!--        <dependency>-->
         <!--            <groupId>me.srikavin</groupId>-->
         <!--            <artifactId>Glade</artifactId>-->
-        <!--            <version>1.7.3</version>-->
+        <!--            <version>1.8.0</version>-->
         <!--        </dependency>-->
         <dependency>
             <groupId>com.zaxxer</groupId>
