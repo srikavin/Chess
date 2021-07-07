@@ -1,0 +1,7 @@
+setup:
+  addons:
+build:
+  docker:
+    web: Dockerfile
+run:
+  web: STOCKFISH_PATH=/opt/stockfish add java $JAVA_OPTS -cp target/classes:target/dependency/* me.infuzion.chess.web.Main $PORT

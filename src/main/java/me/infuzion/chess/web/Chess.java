@@ -1,7 +1,25 @@
+/*
+ * Copyright 2021 Srikavin Ramkumar
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package me.infuzion.chess.web;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import me.infuzion.chess.ai.AiService;
+import me.infuzion.chess.ai.StockfishEngine;
 import me.infuzion.chess.clock.ClockService;
 import me.infuzion.chess.data.PubSubChannel;
 import me.infuzion.chess.data.PubSubChannelPredicate;
@@ -81,6 +99,8 @@ public class Chess implements EventListener {
         manager.registerListener(new ChessMoveListener(gameService, service, manager));
         manager.registerListener(new ChessUserProfileListener(userDatabase));
         manager.registerListener(new ChessGameListener(gameService));
+
+        manager.registerListener(new AiService(gameService, userDatabase, new StockfishEngine(System.getenv("STOCKFISH_PATH"))));
 
         manager.registerListener(new EventListener() {
             @EventHandler()

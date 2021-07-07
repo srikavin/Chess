@@ -16,6 +16,7 @@
 
 package me.infuzion.chess.web.listener.game;
 
+import me.infuzion.chess.ai.StockfishEngine;
 import me.infuzion.chess.clock.ChessClockExpiredMessage;
 import me.infuzion.chess.clock.ChessClockUpdateMessage;
 import me.infuzion.chess.clock.Clock;
@@ -122,6 +123,21 @@ public class ChessMoveListener implements EventListener {
     @Response
     private CreateResponse onCreateRequest(WebSocketTextMessageEvent event, @RequestUser User user) {
         Game game = gameService.createGame(Variants.STANDARD_FEN, user.getIdentifier(), Color.WHITE);
+
+        WebsocketRoom room = gameListeners.computeIfAbsent(game.getId(), (gid) -> new WebsocketRoom(eventManager));
+
+        room.addClient(event.getClient());
+
+        return new CreateResponse(game.getId(), user.getIdentifier(), game);
+    }
+
+    @EventHandler
+    @RequiresAuthentication(value = AuthenticationChecks.REQUEST, request = "create_ai_game")
+    @Route("/api/v1/games/")
+    @Response
+    private CreateResponse onCreateAiRequest(WebSocketTextMessageEvent event, @RequestUser User user) {
+        Game game = gameService.createGame(Variants.STANDARD_FEN, user.getIdentifier(), Color.WHITE);
+        gameService.addPlayerToGame(game.getId(), StockfishEngine.STOCKFISH_ID);
 
         WebsocketRoom room = gameListeners.computeIfAbsent(game.getId(), (gid) -> new WebsocketRoom(eventManager));
 

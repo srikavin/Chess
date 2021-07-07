@@ -1,9 +1,26 @@
+/*
+ * Copyright 2021 Srikavin Ramkumar
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package me.infuzion.chess.web.listener;
 
 import com.google.gson.JsonObject;
 import me.infuzion.chess.game.util.Identifier;
 import me.infuzion.chess.web.dao.UserDao;
 import me.infuzion.chess.web.domain.User;
+import me.infuzion.chess.web.domain.UserRole;
 import me.infuzion.chess.web.domain.service.TokenService;
 import me.infuzion.chess.web.event.helper.RequestUser;
 import me.infuzion.chess.web.event.helper.RequiresAuthentication;
@@ -41,7 +58,7 @@ public class ChessUserAuthenticationListener implements EventListener {
             User user = userDao.checkLoginAndGetUser(username, password);
             return setSuccess(user);
         } else if (request.equalsIgnoreCase("register")) {
-            User user = userDao.createUser(new Identifier(), username, password);
+            User user = userDao.createUser(new Identifier(), username, password, null, UserRole.USER);
             return setSuccess(user);
         }
 

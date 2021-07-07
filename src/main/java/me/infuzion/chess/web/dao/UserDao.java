@@ -18,6 +18,7 @@ package me.infuzion.chess.web.dao;
 
 import me.infuzion.chess.game.util.Identifier;
 import me.infuzion.chess.web.domain.User;
+import me.infuzion.chess.web.domain.UserRole;
 import org.jetbrains.annotations.Nullable;
 
 public interface UserDao {
@@ -31,7 +32,7 @@ public interface UserDao {
     User checkLoginAndGetUser(String username, String password);
 
     @Nullable
-    User createUser(Identifier id, String username, String password);
+    User createUser(Identifier id, String username, String password, String bio, UserRole role);
 
     void deleteUser(Identifier identifier);
 }

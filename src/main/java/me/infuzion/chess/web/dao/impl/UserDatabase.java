@@ -19,12 +19,15 @@ package me.infuzion.chess.web.dao.impl;
 import me.infuzion.chess.game.util.Identifier;
 import me.infuzion.chess.web.dao.UserDao;
 import me.infuzion.chess.web.domain.User;
+import me.infuzion.chess.web.domain.UserRole;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.mindrot.jbcrypt.BCrypt;
 
 import javax.sql.DataSource;
-import java.sql.*;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.time.Instant;
 
 public class UserDatabase extends Database implements UserDao {
@@ -41,7 +44,7 @@ public class UserDatabase extends Database implements UserDao {
                 + "IMAGE_PATH bytea default '/images/unknown.png',"
                 + "LAST_LOGIN timestamp with time zone default now())");
 
-        createUser(new Identifier(), "testing", "abc");
+        createUser(new Identifier(), "testing", "abc", null, UserRole.USER);
     }
 
     private @NotNull User mapUser(ResultSet set) throws SQLException {
@@ -50,73 +53,67 @@ public class UserDatabase extends Database implements UserDao {
         Instant lastLogin = set.getTimestamp("LAST_LOGIN").toInstant();
         String bio = set.getString("BIO");
         String imagePath = set.getString("IMAGE_PATH");
+        UserRole role = UserRole.valueOf(set.getString("ROLE"));
 
-        return new User(new Identifier(id), username, lastLogin, bio, imagePath);
+        return new User(new Identifier(id), username, lastLogin, bio, imagePath, role);
     }
 
     @Override
-    public User createUser(Identifier id, String username, String password) {
-        User existing = DBHelper.prepareStatement(source, "SELECT * FROM USERS WHERE USERNAME = ?", ps -> {
-            ps.setString(1, username);
-
-            return DBHelper.mapFirstElement(ps.executeQuery(), this::mapUser);
-        });
-
-        if (existing != null) {
-            return null;
-        }
-
-        return DBHelper.prepareStatement(source, "INSERT INTO USERS(ID, USERNAME, PASSWORD, LAST_LOGIN) VALUES (?, ?, ?, ?) ON CONFLICT DO NOTHING", ps -> {
+    public User createUser(Identifier id, String username, String password, String bio, UserRole role) {
+        return DBHelper.prepareStatement(source, "INSERT INTO USERS(ID, USERNAME, PASSWORD, LAST_LOGIN, BIO, ROLE) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT DO NOTHING", ps -> {
             String hashed = BCrypt.hashpw(password, BCrypt.gensalt(12));
             ps.setString(1, id.getId());
             ps.setString(2, username);
             ps.setString(3, hashed);
             ps.setTimestamp(4, Timestamp.from(Instant.now()));
-            ps.executeUpdate();
+            ps.setString(5, bio);
+            ps.setString(6, role.toString());
+
+            if (ps.executeUpdate() == 0) {
+                return null;
+            }
 
             return getUser(id.getId());
         });
     }
 
     public void updateImagePath(Identifier user, String path) {
-        try (Connection connection = source.getConnection()) {
-            try (PreparedStatement statement = connection.prepareStatement("UPDATE USERS SET IMAGE_PATH = ? WHERE ID = ?")) {
-                statement.setString(1, path);
-                statement.setString(2, user.getId());
-                statement.executeUpdate();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        DBHelper.prepareStatement(source, "UPDATE USERS SET IMAGE_PATH = ? WHERE ID = ?", ps -> {
+            ps.setString(1, path);
+            ps.setString(2, user.getId());
+
+            ps.executeUpdate();
+        });
     }
 
     @Override
     public @Nullable User checkLoginAndGetUser(String username, String password) {
-        return DBHelper.prepareStatement(source, "SELECT * FROM USERS WHERE USERNAME = ?", (ps) -> {
-            ps.setString(1, username);
+        return DBHelper.transaction(source, conn -> {
+            return DBHelper.prepareStatement(conn, "SELECT * FROM USERS WHERE USERNAME = ?", (ps) -> {
+                ps.setString(1, username);
 
-            return DBHelper.mapFirstElement(ps.executeQuery(), (rs) -> {
-                String id = rs.getString("ID");
-                String hashed = rs.getString("PASSWORD");
-                String bio = rs.getString("BIO");
-                String imagePath = rs.getString("IMAGE_PATH");
+                return DBHelper.mapFirstElement(ps.executeQuery(), (rs) -> {
+                    String id = rs.getString("ID");
+                    String hashed = rs.getString("PASSWORD");
+                    String bio = rs.getString("BIO");
+                    String imagePath = rs.getString("IMAGE_PATH");
+                    UserRole role = UserRole.valueOf(rs.getString("ROLE"));
 
-                if (!BCrypt.checkpw(password, hashed)) {
-                    return null;
-                }
+                    if (!BCrypt.checkpw(password, hashed)) {
+                        return null;
+                    }
 
-                Instant now = Instant.now();
+                    Instant now = Instant.now();
 
-                DBHelper.prepareStatement(source, "UPDATE USERS SET LAST_LOGIN = ? WHERE ID = ?", (lastSeenPS) -> {
-                    // update user last login
-                    lastSeenPS.setTimestamp(1, Timestamp.from(now));
-                    lastSeenPS.setString(2, id);
-                    lastSeenPS.executeUpdate();
+                    DBHelper.prepareStatement(conn, "UPDATE USERS SET LAST_LOGIN = ? WHERE ID = ?", (lastSeenPS) -> {
+                        // update user last login
+                        lastSeenPS.setTimestamp(1, Timestamp.from(now));
+                        lastSeenPS.setString(2, id);
+                        lastSeenPS.executeUpdate();
+                    });
+
+                    return new User(new Identifier(id), username, now, bio, imagePath, role);
                 });
-
-                return new User(new Identifier(id), username, now, bio, imagePath);
             });
         });
     }

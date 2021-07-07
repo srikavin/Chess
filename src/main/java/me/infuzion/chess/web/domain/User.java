@@ -17,27 +17,29 @@
 package me.infuzion.chess.web.domain;
 
 import com.google.gson.JsonObject;
-import me.infuzion.chess.game.util.ChessObject;
 import me.infuzion.chess.game.util.Identifier;
 
 import java.time.Instant;
 
-public class User extends ChessObject {
+public class User {
+    private final Identifier id;
     private final String username;
     private final Instant lastSeen;
     private final String bio;
     private final String imagePath;
+    private final UserRole role;
 
-    public User(Identifier identifier, String username, Instant lastSeen, String bio, String imagePath) {
-        setIdentifier(identifier);
+    public User(Identifier identifier, String username, Instant lastSeen, String bio, String imagePath, UserRole role) {
+        this.id = identifier;
         this.imagePath = imagePath;
         this.username = username;
         this.lastSeen = lastSeen;
         this.bio = bio == null ? "" : bio;
+        this.role = role;
     }
 
-    public User(Identifier identifier, String username, Instant currentEpoch, String imagePath) {
-        this(identifier, username, currentEpoch, null, imagePath);
+    public Identifier getIdentifier() {
+        return id;
     }
 
     public String getUsername() {
@@ -56,12 +58,17 @@ public class User extends ChessObject {
         return imagePath;
     }
 
+    public UserRole getRole() {
+        return role;
+    }
+
     public JsonObject toJson() {
         JsonObject object = new JsonObject();
         object.addProperty("id", this.getIdentifier().getId());
         object.addProperty("username", this.getUsername());
         object.addProperty("bio", this.getBio());
         object.addProperty("lastSeen", this.getLastSeen().toEpochMilli());
+        object.addProperty("role", this.getRole().toString());
         return object;
     }
 }
