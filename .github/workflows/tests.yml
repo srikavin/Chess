@@ -43,6 +43,10 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 14
+      - name: External Dependencies
+        run: |
+          source scripts/get_stockfish.sh
+          echo "STOCKFISH_PATH=$STOCKFISH_PATH" >> $GITHUB_ENV
       - name: Create Postgres Table
         run: PGPASSWORD=postgres psql -h localhost -p 5432 -U postgres -c "CREATE DATABASE test"
       - name: Run Integration Tests

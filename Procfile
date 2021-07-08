@@ -1,1 +1,1 @@
-web: java $JAVA_OPTS -cp target/classes:target/dependency/* me.infuzion.chess.web.Main $PORT
+web: source scripts/get_stockfish.sh && java $JAVA_OPTS -cp target/classes:target/dependency/* me.infuzion.chess.web.Main $PORT
